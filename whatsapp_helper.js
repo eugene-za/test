@@ -8,6 +8,7 @@
 */
 
 /* global $ */
+console.log('included');
 
 window.whatsapp_helper = function(configs) {
 
