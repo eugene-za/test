@@ -1,7 +1,7 @@
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
 * 1. Генерация CSV с откликами на вакансии
-*
+* 2. Чекбокс - Выбрать все отклики
 *
 *
 */
@@ -73,6 +73,18 @@ const hh_helper = function () {
         return new Promise(r => setTimeout(() => r(), ms))
     }
 
+    function addButton(index, html, callback) {
+        const buttonContainer = document.querySelector('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls');
+        let buttons = buttonContainer.querySelectorAll('.candidates-button');
+        const button = $('<span class="candidates-button">' + html + '</span>');
+        index = typeof index === 'undefined' || !buttons[index] ? buttons.length : index;
+        console.log(button)
+        buttonContainer.insertBefore(button[0], buttons[index]);
+        button.click(function (e) {
+            callback(this, e);
+        });
+    }
+
     /**
      * --------------------------------------------------------------------------------------------------------------
      * 1. Генерация CSV с откликами на вакансии
@@ -85,21 +97,10 @@ const hh_helper = function () {
     const selectorButtonNextPage = 'a.bloko-button.HH-Pager-Control[data-qa="pager-next"]';
     const selectorButtonFirstPage = 'a.bloko-button.HH-Pager-Control[data-page="0"]';
 
-    function addButton(index = 0) {
-        const button = $('<span class="candidates-button">' +
-            '<button type="submit" name="reject" class="bloko-button" id="grabVacancies" >Скачать CSV</button>' +
-            '</span>');
-        const buttonContainer = document.querySelector('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls');
-        buttonContainer.insertBefore(button[0], buttonContainer.querySelectorAll('div.candidates-button')[index]);
-        button.click(function () {
-            actionGrabVacancies();
-            return false;
-        });
-    }
+    addButton(2, '<button type="submit" name="reject" class="bloko-button" id="grabVacancies" >Скачать CSV</button>', actionGrabVacancies);
 
-    addButton();
-
-    async function actionGrabVacancies() {
+    async function actionGrabVacancies(btn, e) {
+        e.preventDefault();
         let tempArrayVacancies = [];
         let containerVacancies = await waitForElement(selectorContainerVacancies);
 
@@ -107,6 +108,7 @@ const hh_helper = function () {
         let buttonFirstPage = document.querySelector(selectorButtonFirstPage);
         if (buttonFirstPage) {
             eventFire(buttonFirstPage, 'click');
+            await waitForElement(selectorContainerVacancies + ' div[data-qa="pager-block"]');
         }
 
         // Парсинг текущей страницы
@@ -119,6 +121,7 @@ const hh_helper = function () {
             // Парсинг текущей страницы
             await waitForElement(selectorContainerVacancies + ' div[data-qa="pager-block"]');
             tempArrayVacancies = tempArrayVacancies.concat(await grubVacanciesPage(containerVacancies));
+            await delay(50);
             buttonNext = document.querySelector(selectorButtonNextPage);
         }
 
@@ -237,9 +240,22 @@ const hh_helper = function () {
         };
     }
 
-    function addCheckboxSelectAll() {
-        let checkbox = $('<input type="checkbox">');
-        $('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls').prepend(checkbox);
+    /**
+     * --------------------------------------------------------------------------------------------------------------
+     * 2. Чекбокс - Выбрать все отклики
+     * --------------------------------------------------------------------------------------------------------------
+     */
+
+    addButton(0, '<input type="checkbox" title="Выбрать все">', actionSelectAllVacancies);
+
+    function actionSelectAllVacancies(checkbox, e) {
+        if(checkbox.checked === true){
+
+        }
+        let items = document.querySelectorAll(selectorContainerVacancies + ' ' + selectorVacancyItem);
+        for (var item of items) {
+            eventFire(item.querySelector('.bloko-checkbox'), 'click');
+        }
     }
 
 };
