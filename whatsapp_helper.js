@@ -259,6 +259,7 @@ window.whatsapp_helper = function() {
             }
             input.val(phoneNumber);
             openChatByPhone(phoneNumber);
+            return false;
         });
         // Действие при вставке номера телефона в форму или вне ее
         window.addEventListener('paste', function (e) {
