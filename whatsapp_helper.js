@@ -247,19 +247,17 @@ window.whatsapp_helper = function() {
         // Обращение к Whatsapp API через клик по ссылке
         $('#phoneFormContainer form').on('submit', function (e) {
             e.preventDefault();
-            let value = input.val();
-            if (!value) {
+            let phoneNumber = formatPhoneNumber(input.val());
+            if (!phoneNumber) {
                 console.error('ОШИБКА: поле ввода номера телефона пустое');
                 return;
             }
-            let phoneNumber = formatPhoneNumber(value);
             let container = $('#phoneFormContainer');
             if (!container.hasClass('open')) {
                 container.addClass('open');
             }
             input.val(phoneNumber);
             openChatByPhone(phoneNumber);
-            return false;
         });
         // Действие при вставке номера телефона в форму или вне ее
         window.addEventListener('paste', function (e) {
