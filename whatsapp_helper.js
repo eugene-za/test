@@ -7,7 +7,7 @@
 *
 */
 
-const whatsapp_helper = () => {
+const whatsapp_helper = function() {
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
