@@ -236,4 +236,9 @@ const hh_helper = function () {
         };
     }
 
+    function addCheckboxSelectAll() {
+        let checkbox = $('<input type="checkbox">');
+        $('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls').prepend(checkbox);
+    }
+
 };
