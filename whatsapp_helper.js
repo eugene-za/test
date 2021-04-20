@@ -7,7 +7,7 @@
 *
 */
 
-const whatsapp_helper = function(configs) {
+window.whatsapp_helper = function() {
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
