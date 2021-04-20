@@ -248,10 +248,7 @@ const hh_helper = function () {
 
     addButton(0, '<input type="checkbox" title="Выбрать все">', actionSelectAllVacancies);
 
-    function actionSelectAllVacancies(checkbox, e) {
-        if(checkbox.checked === true){
-
-        }
+    function actionSelectAllVacancies() {
         let items = document.querySelectorAll(selectorContainerVacancies + ' ' + selectorVacancyItem);
         for (var item of items) {
             eventFire(item.querySelector('.bloko-checkbox'), 'click');
