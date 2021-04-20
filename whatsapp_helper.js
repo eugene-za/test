@@ -9,7 +9,7 @@
 
 /* global $ */
 
-function whatsapp_helper(configs) {
+window.whatsapp_helper = function(configs) {
 
     const { userID, hash, phoneID } = configs;
 
