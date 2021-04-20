@@ -9,7 +9,9 @@
 
 /* global $ */
 
-function whatsapp_helper() {
+function whatsapp_helper(configs) {
+
+    const { userID, hash, phoneID } = configs;
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
