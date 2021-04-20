@@ -12,8 +12,9 @@ console.log('included');
 
 window.whatsapp_helper = function(configs) {
 
-    const { userID, hash, phoneID } = configs;
-
+    const userID = configs.userID;
+    const phoneID = configs.phoneID;
+    const hash = configs.hash;
     console.log(configs);
     console.log(userID);
     console.log(hash);
