@@ -13,6 +13,10 @@ function whatsapp_helper(configs) {
 
     const { userID, hash, phoneID } = configs;
 
+    console.log(userID);
+    console.log(hash);
+    console.log(phoneID);
+
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
     // URL API для получения сообщений
