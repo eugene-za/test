@@ -248,6 +248,7 @@ window.whatsapp_helper = function() {
         $('#phoneFormContainer form').on('submit', function (e) {
             e.preventDefault();
             let phoneNumber = formatPhoneNumber(input.val());
+            input.val(phoneNumber);
             if (!phoneNumber) {
                 console.error('ОШИБКА: поле ввода номера телефона пустое');
                 return;
@@ -256,7 +257,6 @@ window.whatsapp_helper = function() {
             if (!container.hasClass('open')) {
                 container.addClass('open');
             }
-            input.val(phoneNumber);
             openChatByPhone(phoneNumber);
         });
         // Действие при вставке номера телефона в форму или вне ее
