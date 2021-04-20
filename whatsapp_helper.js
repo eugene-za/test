@@ -14,6 +14,7 @@ window.whatsapp_helper = function(configs) {
 
     const { userID, hash, phoneID } = configs;
 
+    console.log(configs);
     console.log(userID);
     console.log(hash);
     console.log(phoneID);
