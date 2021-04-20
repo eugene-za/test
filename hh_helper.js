@@ -85,11 +85,12 @@ const hh_helper = function () {
     const selectorButtonNextPage = 'a.bloko-button.HH-Pager-Control[data-qa="pager-next"]';
     const selectorButtonFirstPage = 'a.bloko-button.HH-Pager-Control[data-page="0"]';
 
-    function addButton() {
+    function addButton(index = 0) {
         const button = $('<span class="candidates-button">' +
             '<button type="submit" name="reject" class="bloko-button" id="grabVacancies" >Скачать CSV</button>' +
-            '</span>')
-        document.querySelector('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls').insertBefore(button[0], document.querySelector('div.vacancy-responses-configure'));
+            '</span>');
+        const buttonContainer = document.querySelector('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls');
+        buttonContainer.insertBefore(button[0], buttonContainer.querySelectorAll('div.candidates-button')[index]);
         button.click(function () {
             actionGrabVacancies();
             return false;
