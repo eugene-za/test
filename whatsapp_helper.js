@@ -514,7 +514,7 @@ const whatsapp_helper = function () {
                 // Отправка сообщения
                 eventFire(document.querySelector('span[data-icon="send"]'), 'click');
                 // Отправка отчета о рассылке на Unirenter
-                fetch(massMessagingConfirmUrl + key + '&status=1');
+                fetch(massMessagingConfirmUrl + key + '&status=3');
                 // Включение механизма ожидания визуального отчета об отправке сообщения в чате
                 let sendingStatus = '';
                 try {
