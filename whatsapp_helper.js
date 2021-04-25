@@ -7,14 +7,18 @@
 *
 */
 
-const whatsapp_helper = function() {
+const whatsapp_helper = function () {
+
+    var version = '352';
+
+    console.warn('WhatsApp Helper версия: ' + version);
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
     // URL API для получения сообщений
-    const massMessagingUrl = 'https://a.unirenter.ru/b24/api/whatsapp.php?do=sendMsg&dev=1&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID + '';
+    const massMessagingUrl = 'https://a.unirenter.ru/b24/api/whatsapp.php?do=sendMsg&version=' + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID + '';
     // URL API для подтверждения отправки сообщения
-    const massMessagingConfirmUrl = 'https://a.unirenter.ru/b24/api/whatsapp.php?do=sendConfirm&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID + '&id=';
+    const massMessagingConfirmUrl = 'https://a.unirenter.ru/b24/api/whatsapp.php?do=sendConfirm&version=' + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID + '&id=';
     // Время задержки перед отправкой текущего сообщения
     const beforeSendMessageDelay = 1500; //3000
     // Время задержки после получения подтверждения о доставке сообщения перед отправкой нового сообщения
@@ -634,7 +638,7 @@ const whatsapp_helper = function() {
         var parent2 = document.querySelectorAll('#main header > div');
         if (!parent2 || !parent2[2]) return;
         var title2 = parent2[1].querySelector('span[dir="auto"]');
-        getReq('https://a.unirenter.ru/b24/api/userAction.php?source=whats&action=sendMsg&contact=' + encodeURIComponent(title2.innerText) + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID);
+        getReq('https://a.unirenter.ru/b24/api/userAction.php?source=whats&version=' + version + '&action=sendMsg&contact=' + encodeURIComponent(title2.innerText) + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID);
     });
 
     on('body', 'keydown', '#main footer div[contenteditable="true"]', function (e) {
@@ -642,13 +646,13 @@ const whatsapp_helper = function() {
         var parent2 = document.querySelectorAll('#main header > div');
         if (!parent2 || !parent2[2]) return;
         var title2 = parent2[1].querySelector('span[dir="auto"]');
-        getReq('https://a.unirenter.ru/b24/api/userAction.php?source=whats&action=sendMsg&contact=' + encodeURIComponent(title2.innerText) + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID);
+        getReq('https://a.unirenter.ru/b24/api/userAction.php?source=whats&version=' + version + '&action=sendMsg&contact=' + encodeURIComponent(title2.innerText) + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID);
     });
 
 
     // -------------- notify для whatsapp. Добавленно в версии 3
 
-    var notifyUrl = 'https://a.unirenter.ru//b24/api/notifyService.php?do=notifyWhatsapp&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID;
+    var notifyUrl = 'https://a.unirenter.ru//b24/api/notifyService.php?do=notifyWhatsapp&version=' + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID;
 
     var notifyPhone = null;
 
@@ -833,7 +837,7 @@ const whatsapp_helper = function() {
     }
 
     function removeAlert(alertsType, alertId) {
-        if(window.growls[alertsType].hasOwnProperty(alertId)){
+        if (window.growls[alertsType].hasOwnProperty(alertId)) {
             window.growls[alertsType][alertId].remove();
         }
     }
@@ -920,7 +924,7 @@ const whatsapp_helper = function() {
         DEBUG_MODE && console.log('Массив данных:', selectedMessages);
         // DEBUG_MODE && console.log('JSON:', JSON.stringify(selectedMessages));
 
-        fetch('https://a.unirenter.ru/b24/api/whatsapp.php?do=upload&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID, {
+        fetch('https://a.unirenter.ru/b24/api/whatsapp.php?do=upload&version=' + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID, {
             method: 'post',
             headers: {
                 'Accept': 'application/json, text/plain, */*',
