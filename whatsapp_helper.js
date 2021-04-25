@@ -91,6 +91,7 @@ const whatsapp_helper = function() {
         return new Promise(function (resolve) {
             let interval = setInterval(function () {
                 const element = parent.querySelector(selector);
+                console.log(element);
                 if (element) {
                     clearInterval(interval);
                     resolve(element);
@@ -163,7 +164,7 @@ const whatsapp_helper = function() {
                         observer.disconnect();
                         reject('Неверный номер телефона - ' + phoneNumber);
                     }
-                    if (mutation.target.matches('._1JAUF') && mutation.target.textContent.includes(textMessage) /*&& mutation.target.textContent*/) {
+                    if (mutation.target.matches('._1JAUF') && (!textMessage || mutation.target.textContent.includes(textMessage)) /*&& mutation.target.textContent*/) {
                         observer.disconnect();
                         resolve(mutation.target);
                     }
@@ -478,7 +479,10 @@ const whatsapp_helper = function() {
                 messageText = formatTextMessage(data.msg[key].msgText);
             try {
                 // Открытие окна чата
-                await openChatByPhone(phoneNumber, messageText);
+                let messageBox = (await openChatByPhone(phoneNumber)).querySelector('.copyable-text[data-tab="6"]');
+                // Bставка сообщения
+                messageBox.innerHTML = messageText;
+                eventFire(messageBox, 'input');
 
                 if (data.msg[key].hasOwnProperty('img')) {
                     let pngBlobs = [];
