@@ -172,7 +172,7 @@ const whatsapp_helper = function () {
                         let textarea = mutation.target.querySelector('.copyable-text[data-tab="6"]');
                         textarea.innerHTML = messageText || '';
                         eventFire(textarea, 'input');
-                        resolve(mutation.target);
+                        resolve(mutation.target.closest('div.vR1LG._3wXwX.copyable-area'));
                     }
                 });
             });
