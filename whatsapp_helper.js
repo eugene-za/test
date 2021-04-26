@@ -485,7 +485,7 @@ const whatsapp_helper = function () {
                 messageText = formatTextMessage(data.msg[key].msgText);
             try {
                 // Открытие окна чата
-                await openChatByPhone(phoneNumber, messageText);
+                let messageBox = await openChatByPhone(phoneNumber, messageText);
 
                 if (data.msg[key].hasOwnProperty('img')) {
                     let pngBlobs = [];
