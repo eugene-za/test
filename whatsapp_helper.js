@@ -1,7 +1,7 @@
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
 * 1. Открытие нового чата по номеру телефона
-* 2. Массовая рассылка сообщений (исправлен баг 26 апреля 2021) --2--
+* 2. Массовая рассылка сообщений (исправлен баг 26 апреля 2021) --3--
 *
 * ....
 *
@@ -22,7 +22,7 @@ const whatsapp_helper = function () {
     // Время задержки перед отправкой текущего сообщения
     const beforeSendMessageDelay = 1500; //3000
     // Время задержки после получения подтверждения о доставке сообщения перед отправкой нового сообщения
-    const beforeNextMessageDelay = 2000; //5000
+    const beforeNextMessageDelay = 4000; //5000
     // Максимальное время ожидания визуального отчета об отправке сообщения в чате
     const waitUntilMessageSentDelay = 5000; //5000
 
@@ -469,6 +469,7 @@ const whatsapp_helper = function () {
         massMessagingButton.addClass('blocked');
         let response = await fetch(massMessagingUrl);
         let data = await response.json();
+        console.log(data)
         if (!data.msg || Object.keys(data.msg).length === 0) {
             if (!data.msg) console.error('ОШИБКА: неверный формат ответа сервера');
             else console.warn('Сообщений для рассылки нет');
