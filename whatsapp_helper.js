@@ -157,10 +157,9 @@ const whatsapp_helper = function () {
     }
 
     // Функция открытия чата по номеру телефона. Возвращает Promise
-    function openChatByPhone(phoneNumber, textMessage) {
-        whatsappApiLink.href = 'https://api.whatsapp.com/send?phone=' + phoneNumber + (textMessage ? '&text=' + textMessage : '');
+    function openChatByPhone(phoneNumber, messageText) {
+        whatsappApiLink.href = 'https://api.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
         whatsappApiLink.click();
-
         return new Promise(function (resolve, reject) {
             var observer = new MutationObserver(function (mutations) {
                 mutations.forEach(function (mutation) {
@@ -168,8 +167,11 @@ const whatsapp_helper = function () {
                         observer.disconnect();
                         reject('Неверный номер телефона - ' + phoneNumber);
                     }
-                    if (mutation.target.matches('._1JAUF') && (!textMessage || mutation.target.textContent.includes(textMessage)) /*&& mutation.target.textContent*/) {
+                    if (mutation.target.matches('._1JAUF') && mutation.target.textContent.includes(phoneNumber)/*&& mutation.target.textContent*/) {
                         observer.disconnect();
+                        let textarea = mutation.target.querySelector('.copyable-text[data-tab="6"]');
+                        textarea.innerHTML = messageText || '';
+                        eventFire(textarea, 'input');
                         resolve(mutation.target);
                     }
                 });
@@ -483,10 +485,7 @@ const whatsapp_helper = function () {
                 messageText = formatTextMessage(data.msg[key].msgText);
             try {
                 // Открытие окна чата
-                let messageBox = (await openChatByPhone(phoneNumber)).querySelector('.copyable-text[data-tab="6"]');
-                // Bставка сообщения
-                messageBox.innerHTML = messageText;
-                eventFire(messageBox, 'input');
+                await openChatByPhone(phoneNumber, messageText);
 
                 if (data.msg[key].hasOwnProperty('img')) {
                     let pngBlobs = [];
@@ -512,7 +511,7 @@ const whatsapp_helper = function () {
                 }
                 await delay(beforeSendMessageDelay);
                 // Отправка сообщения
-                eventFire(document.querySelector('span[data-icon="send"]'), 'click');
+                eventFire(messageBox.querySelector('span[data-icon="send"]'), 'click');
                 // Отправка отчета о рассылке на Unirenter
                 fetch(massMessagingConfirmUrl + key + '&status=3');
                 // Включение механизма ожидания визуального отчета об отправке сообщения в чате
