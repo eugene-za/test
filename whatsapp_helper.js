@@ -1,9 +1,10 @@
-/*
+/* (добавлен попап showPopup(url))
 * ОПИСАНИЕ ФУНКЦИОНАЛА
 * 1. Открытие нового чата по номеру телефона
-* 2. Массовая рассылка сообщений (исправлен баг 26 апреля 2021) --3--
-*
-* ....
+* 2. Массовая рассылка сообщений
+* 3. ------Добавление кнопок...
+* 4. Оповещения, showDocumentComments(), showPopup(url)
+* 5. Загрузка выбраных сообщений на unirenter server
 *
 */
 
@@ -108,36 +109,6 @@ const whatsapp_helper = function () {
     const delay = ms => {
         return new Promise(r => setTimeout(() => r(), ms))
     }
-
-    /*// Функция ожидает появление элемента с selector (внутри target)
-    function waitForElement(selector, target) {
-        return new Promise(function (resolve) {
-            var element = (target || document).querySelector(selector);
-
-            if (element) {
-                resolve(element);
-                return;
-            }
-
-            var observer = new MutationObserver(function (mutations) {
-                mutations.forEach(function (mutation) {
-                    var nodes = Array.from(mutation.addedNodes);
-                    for (var node of nodes) {
-                        if (node.matches && node.matches(selector)) {
-                            observer.disconnect();
-                            resolve(node);
-                            return;
-                        }
-                    }
-                });
-            });
-
-            observer.observe(target || document.documentElement, {
-                childList: true,
-                subtree: true
-            });
-        });
-    }*/
 
     // ---*** ОБЩИЕ ФУНКЦИИ ***---
 
@@ -283,6 +254,8 @@ const whatsapp_helper = function () {
      * --------------------------------------------------------------------------------------------------------------
      */
 
+    let restMessagesCountIndicator;
+
     // Создание кнопки
     function addMassMessagingButton() {
         // Добавление CSS стилей
@@ -303,27 +276,6 @@ const whatsapp_helper = function () {
             if (!$('#massMessagingButton').hasClass('blocked')) doMassMessaging();
         });
     }
-
-    /*function getTempImgContainer() {
-        let tempImgContainer = document.querySelector('#tempImgContainer > div:first-child');
-        if (!tempImgContainer) {
-            appendStyle('#tempImgContainer { display:block; background:#f7f7f7; overflow:overlay; margin-top:-26%; z-index:100; height:100%; }' +
-                '#tempImgContainer img { display:block; float:right; height:100px; max-width:100%; margin:4px 10px; }' +
-                '#tempImgContainer > div:first-child { text-align:right; }');
-            var container = $('<div id="tempImgContainer">' +
-                '<div></div>' +
-                '<div id="deleteTempImg"></div>' +
-                '</div>');
-            container.appendTo('#side');
-            tempImgContainer = document.querySelector('#tempImgContainer > div:first-child');
-        } else {
-            tempImgContainer.innerHTML = '';
-        }
-        return tempImgContainer;
-    }*/
-
-
-    var restMessagesCountIndicator;
 
     // Функция отображения счетчика оставшихся сообщений для рассылки
     function restIndicatorSet(restMessagesCount) {
@@ -357,43 +309,6 @@ const whatsapp_helper = function () {
 
     }
 
-    /*function triggerDragAndDrop(selectorDrop, elemDrag) {
-        // fetch target elements
-        var elemDrop = document.querySelector(selectorDrop);
-        if (!elemDrop) return false;
-        return new Promise(async function (resolve) {
-            // calculate positions
-            var pos = elemDrag.getBoundingClientRect();
-            var center1X = Math.floor((pos.left + pos.right) / 2);
-            var center1Y = Math.floor((pos.top + pos.bottom) / 2);
-            //console.log(center1X, center1Y);
-            pos = elemDrop.getBoundingClientRect()
-            var center2X = Math.floor((pos.left + pos.right) / 2);
-            var center2Y = Math.floor((pos.top + pos.bottom) / 2);
-            // mouse over dragged element and mousedown
-            eventFire(elemDrag, 'mousemove', center1X, center1Y);
-            eventFire(elemDrag, 'mouseenter', center1X, center1Y);
-            eventFire(elemDrag, 'mouseover', center1X, center1Y);
-            eventFire(elemDrag, 'mousedown', center1X, center1Y);
-            // start dragging process over to drop target
-            eventFire(elemDrag, 'dragstart', center1X, center1Y);
-            eventFire(elemDrag, 'drag', center1X, center1Y);
-            eventFire(elemDrag, 'mousemove', center1X, center1Y);
-            eventFire(elemDrag, 'drag', center2X, center2Y);
-            eventFire(elemDrop, 'mousemove', center2X, center2Y);
-            // trigger dragging process on top of drop target
-            eventFire(elemDrop, 'mouseenter', center2X, center2Y);
-            eventFire(elemDrop, 'dragenter', center2X, center2Y);
-            eventFire(elemDrop, 'mouseover', center2X, center2Y);
-            eventFire(elemDrop, 'dragover', center2X, center2Y);
-            resolve(center1X + ':' + center1Y);
-            // release dragged element on top of drop target
-            eventFire(elemDrop, 'drop', center2X, center2Y);
-            eventFire(elemDrag, 'dragend', center2X, center2Y);
-            eventFire(elemDrag, 'mouseup', center2X, center2Y);
-        });
-    }*/
-
     // Функция ожидания визуального отчета об отправке сообщения в чате
     function waitUntilMessageSent() {
         // Предыдущее отправленное сообщение в ленте
@@ -423,14 +338,6 @@ const whatsapp_helper = function () {
             }, 200);
         });
     }
-
-    /* let isPasted = readyForPaste = false;
-     var pasteListener = () => {
-         if(readyForPaste){
-             readyForPaste = false;
-         }
-     }
- */
 
     let readyForPaste = false;
 
@@ -469,7 +376,6 @@ const whatsapp_helper = function () {
         massMessagingButton.addClass('blocked');
         let response = await fetch(massMessagingUrl);
         let data = await response.json();
-        console.log(data)
         if (!data.msg || Object.keys(data.msg).length === 0) {
             if (!data.msg) console.error('ОШИБКА: неверный формат ответа сервера');
             else console.warn('Сообщений для рассылки нет');
@@ -649,8 +555,11 @@ const whatsapp_helper = function () {
         getReq('https://a.unirenter.ru/b24/api/userAction.php?source=whats&version=' + version + '&action=sendMsg&contact=' + encodeURIComponent(title2.innerText) + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID);
     });
 
-
-    // -------------- notify для whatsapp. Добавленно в версии 3
+    /**
+     * --------------------------------------------------------------------------------------------------------------
+     * 4. Оповещения, showDocumentComments(), showPopup()
+     * --------------------------------------------------------------------------------------------------------------
+     */
 
     var notifyUrl = 'https://a.unirenter.ru//b24/api/notifyService.php?do=notifyWhatsapp&version=' + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID;
 
@@ -702,6 +611,168 @@ const whatsapp_helper = function () {
             removeAlert('notify', notifyId);
         });
     }
+
+    /*
+    * ----------------------------- Popup
+    */
+    appendStyle('#popup_window {width:80%;height:80%;position:relative;z-index:100;margin:auto;margin-top:5%;}' +
+        '#popup_window > * {padding:12px 8px}' +
+        '#popup_window header {background-color:rgba(99,99,99,.2)}' +
+        '#popup_window header h4 {font-weight:bold;font-size:20px}' +
+        '#popup_window header span {padding:5px 10px;float:right;border-radius:4px;background-color:#882c2c;font-size:15px;margin:-1px 5px 0;cursor:pointer;color:#fff}');
+
+    window.popupIsLoading = false;
+    window.showPopup = async (url) => {
+        url += '&version=' + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID;
+        if (popupIsLoading) return false;
+        popupIsLoading = true;
+        let alreadyPopup = document.getElementById('popup_window');
+        if (alreadyPopup) closePopup(alreadyPopup);
+        let data = await fetch(url).then(response => response.json());
+        DEBUG_MODE && console.log('Data: ', data);
+        if (data && data.hasOwnProperty('msg')) {
+            const chatMessagesWrapper = $('div._2wjK5');
+            const popup = $('<div id="popup_window" style="background-color:' + data.msg[0].bColor + '">' +
+                '<header>' +
+                '<span onclick="closePopup(this)">Закрыть</span>' +
+                '<h4 style="color:' + data.msg[0].tColor + '">' + data.msg[0].title + '</h4>' +
+                '</header>' +
+                '<div style="color:' + data.msg[0].tColor + '">' + data.msg[0].msg + '</div>' +
+                '</div>');
+            chatMessagesWrapper.append(popup);
+            popupIsLoading = false;
+        }
+    }
+
+    window.closePopup = (element) => {
+        (element.id === 'popup_window' ? element : element.closest('div#popup_window')).remove();
+    }
+
+    /**
+     * --------------------------------------------------------------------------------------------------------------
+     * 5. Загрузка выбраных сообщений на unirenter server
+     * --------------------------------------------------------------------------------------------------------------
+     */
+
+    var uploadToServerButton = document.createElement('button');
+    uploadToServerButton.title = 'Отправить на сервер';
+    uploadToServerButton.innerHTML = '<span data-testid="star-btn" data-icon="star-btn" class="">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="24" height="24" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" viewBox="0 0 640 640" xmlns:v="https://vecta.io/nano"><path d="M434 192L324 57c-1-1-2-2-4-2-1 0-3 1-4 2L206 192c-1 1-1 3 0 5 0 2 2 3 4 3h40v114c0 3 2 6 5 6h130c3 0 5-3 5-6V200h40c2 0 4-1 5-3s1-4-1-5zm108 228c-9 0-17 8-17 17 0 10 8 18 17 18 10 0 18-8 18-18 0-9-8-17-18-17zm81-45c0-1 0-1-1-2h-1c-2-3-4-5-6-6l-93-90c-11-11-24-17-37-17h-70c-6 0-10 4-10 10s4 10 10 10h70c10 0 19 7 24 11l60 59H71l60-59c5-4 14-11 24-11h70c5 0 10-4 10-10s-5-10-10-10h-70c-13 0-26 6-38 17l-91 89c-3 2-6 4-8 7-11 13-18 29-18 47v35c0 38 31 70 70 70h500c38 0 70-32 70-70v-35c0-17-6-33-17-45zM83 460c-13 0-23-10-23-23 0-12 10-22 23-22 12 0 22 10 22 22 0 13-10 23-22 23zm477 5H410c-11 0-20-9-20-20v-15c0-11 9-20 20-20h150c11 0 20 9 20 20v15c0 11-9 20-20 20z"/></svg>' +
+        '</span>';
+
+    var messagesRegion;
+
+    function makeBase64Image(img, maxWidth) {
+        var w, h;
+        if (img.naturalWidth > maxWidth) {
+            w = maxWidth;
+            h = (img.naturalHeight * maxWidth) / img.naturalWidth;
+        } else {
+            w = img.naturalWidth;
+            h = img.naturalHeight;
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        return canvas.toDataURL('image/jpeg');
+    }
+
+    uploadToServerButton.onclick = function () {
+
+        var user = document.querySelector('#main header span[dir=auto]').textContent;
+
+        var selectedMessages = [];
+
+        var messageSelectionIndicators = messagesRegion.querySelectorAll('div[tabindex] > span > div');
+
+        messageSelectionIndicators.forEach(function (indicator) {
+
+            if (getComputedStyle(indicator.lastChild.lastChild.lastChild).opacity === '1') {
+                // Альтернативное условие: getComputedStyle(indicator).backgroundColor !== 'rgba(0, 0, 0, 0)'
+
+                var messageContainer = indicator.parentNode.parentNode;
+                var combinedMessage = messageContainer.querySelector('div.copyable-text');
+                var time, date = '', images = [], text = '';
+
+                if (combinedMessage) {
+                    var info = combinedMessage.dataset.prePlainText.replace('[', '').replace(': ', '').replace(']', ',').split(', ');
+                    time = info[0];
+                    date = info[1];
+                    text = combinedMessage.querySelector('span.copyable-text').textContent;
+                } else {
+                    messageContainer.querySelectorAll('span[dir=auto]').forEach(function (info) {
+                        if (/^[0-9]{2}:[0-9]{2}$/.test(info.innerText)) {
+                            time = info.innerText;
+                        }
+                    });
+                }
+
+
+                var lasImgParent = null;
+                messageContainer.querySelectorAll('img').forEach(function (img) {
+                    if (!img.classList.contains('emoji') && img.src.indexOf('blob') == 0) {
+                        if (!lasImgParent || (lasImgParent !== img.parentNode.parentNode)) {
+                            lasImgParent = img.parentNode.parentNode;
+                            images.push(makeBase64Image(img));
+                        }
+                    }
+                });
+
+                selectedMessages.push({
+                    'time': time,
+                    'date': date,
+                    'user': user,
+                    'images': images,
+                    'text': text
+                });
+            }
+
+        });
+
+        DEBUG_MODE && console.log('Массив данных:', selectedMessages);
+        // DEBUG_MODE && console.log('JSON:', JSON.stringify(selectedMessages));
+
+        fetch('https://a.unirenter.ru/b24/api/whatsapp.php?do=upload&version=' + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID, {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(selectedMessages)
+        }).then(res => res.json())
+            .then(res => console.log(res));
+
+    }
+
+    watchDomMutation('#main footer + span > div', document, messagesSelectPanel => {
+        messagesRegion = document.querySelector('#main div[role=region]');
+
+        var exampleButton = messagesSelectPanel.childNodes[2];
+        uploadToServerButton.className = exampleButton.className;
+        uploadToServerButton.disabled = exampleButton.disabled;
+
+        var observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type == "attributes") {
+                    uploadToServerButton.disabled = exampleButton.disabled;
+                }
+            });
+        });
+
+        observer.observe(exampleButton, {
+            attributes: true
+        });
+
+        messagesSelectPanel.childNodes[1].after(uploadToServerButton);
+    });
+
+    /**
+     * --------------------------------------------------------------------------------------------------------------
+     * Инструменты, плагины
+     * --------------------------------------------------------------------------------------------------------------
+     */
 
     /*
     * ----------------------------- Alerts
@@ -841,121 +912,5 @@ const whatsapp_helper = function () {
             window.growls[alertsType][alertId].remove();
         }
     }
-
-    // ------------- Upload on unirenter server. Добавленно в версии 3.1
-
-    var uploadToServerButton = document.createElement('button');
-    uploadToServerButton.title = 'Отправить на сервер';
-    uploadToServerButton.innerHTML = '<span data-testid="star-btn" data-icon="star-btn" class="">' +
-        '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="24" height="24" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" viewBox="0 0 640 640" xmlns:v="https://vecta.io/nano"><path d="M434 192L324 57c-1-1-2-2-4-2-1 0-3 1-4 2L206 192c-1 1-1 3 0 5 0 2 2 3 4 3h40v114c0 3 2 6 5 6h130c3 0 5-3 5-6V200h40c2 0 4-1 5-3s1-4-1-5zm108 228c-9 0-17 8-17 17 0 10 8 18 17 18 10 0 18-8 18-18 0-9-8-17-18-17zm81-45c0-1 0-1-1-2h-1c-2-3-4-5-6-6l-93-90c-11-11-24-17-37-17h-70c-6 0-10 4-10 10s4 10 10 10h70c10 0 19 7 24 11l60 59H71l60-59c5-4 14-11 24-11h70c5 0 10-4 10-10s-5-10-10-10h-70c-13 0-26 6-38 17l-91 89c-3 2-6 4-8 7-11 13-18 29-18 47v35c0 38 31 70 70 70h500c38 0 70-32 70-70v-35c0-17-6-33-17-45zM83 460c-13 0-23-10-23-23 0-12 10-22 23-22 12 0 22 10 22 22 0 13-10 23-22 23zm477 5H410c-11 0-20-9-20-20v-15c0-11 9-20 20-20h150c11 0 20 9 20 20v15c0 11-9 20-20 20z"/></svg>' +
-        '</span>';
-
-    var messagesRegion;
-
-    function makeBase64Image(img, maxWidth) {
-        var w, h;
-        if (img.naturalWidth > maxWidth) {
-            w = maxWidth;
-            h = (img.naturalHeight * maxWidth) / img.naturalWidth;
-        } else {
-            w = img.naturalWidth;
-            h = img.naturalHeight;
-        }
-        var canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        return canvas.toDataURL('image/jpeg');
-    }
-
-    uploadToServerButton.onclick = function () {
-
-        var user = document.querySelector('#main header span[dir=auto]').textContent;
-
-        var selectedMessages = [];
-
-        var messageSelectionIndicators = messagesRegion.querySelectorAll('div[tabindex] > span > div');
-
-        messageSelectionIndicators.forEach(function (indicator) {
-
-            if (getComputedStyle(indicator.lastChild.lastChild.lastChild).opacity === '1') {
-                // Альтернативное условие: getComputedStyle(indicator).backgroundColor !== 'rgba(0, 0, 0, 0)'
-
-                var messageContainer = indicator.parentNode.parentNode;
-                var combinedMessage = messageContainer.querySelector('div.copyable-text');
-                var time, date = '', images = [], text = '';
-
-                if (combinedMessage) {
-                    var info = combinedMessage.dataset.prePlainText.replace('[', '').replace(': ', '').replace(']', ',').split(', ');
-                    time = info[0];
-                    date = info[1];
-                    text = combinedMessage.querySelector('span.copyable-text').textContent;
-                } else {
-                    messageContainer.querySelectorAll('span[dir=auto]').forEach(function (info) {
-                        if (/^[0-9]{2}:[0-9]{2}$/.test(info.innerText)) {
-                            time = info.innerText;
-                        }
-                    });
-                }
-
-
-                var lasImgParent = null;
-                messageContainer.querySelectorAll('img').forEach(function (img) {
-                    if (!img.classList.contains('emoji') && img.src.indexOf('blob') == 0) {
-                        if (!lasImgParent || (lasImgParent !== img.parentNode.parentNode)) {
-                            lasImgParent = img.parentNode.parentNode;
-                            images.push(makeBase64Image(img));
-                        }
-                    }
-                });
-
-                selectedMessages.push({
-                    'time': time,
-                    'date': date,
-                    'user': user,
-                    'images': images,
-                    'text': text
-                });
-            }
-
-        });
-
-        DEBUG_MODE && console.log('Массив данных:', selectedMessages);
-        // DEBUG_MODE && console.log('JSON:', JSON.stringify(selectedMessages));
-
-        fetch('https://a.unirenter.ru/b24/api/whatsapp.php?do=upload&version=' + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID, {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json, text/plain, */*',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(selectedMessages)
-        }).then(res => res.json())
-            .then(res => console.log(res));
-
-    }
-
-    watchDomMutation('#main footer + span > div', document, messagesSelectPanel => {
-        messagesRegion = document.querySelector('#main div[role=region]');
-
-        var exampleButton = messagesSelectPanel.childNodes[2];
-        uploadToServerButton.className = exampleButton.className;
-        uploadToServerButton.disabled = exampleButton.disabled;
-
-        var observer = new MutationObserver(function (mutations) {
-            mutations.forEach(function (mutation) {
-                if (mutation.type == "attributes") {
-                    uploadToServerButton.disabled = exampleButton.disabled;
-                }
-            });
-        });
-
-        observer.observe(exampleButton, {
-            attributes: true
-        });
-
-        messagesSelectPanel.childNodes[1].after(uploadToServerButton);
-    });
 
 }
