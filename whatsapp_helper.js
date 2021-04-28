@@ -1,4 +1,6 @@
-/* (добавлен попап showPopup(url))
+// ==UserScript== Обновлено 28 апреля 2021 - 1
+
+/*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
 * 1. Открытие нового чата по номеру телефона
 * 2. Массовая рассылка сообщений
@@ -609,6 +611,9 @@ const whatsapp_helper = function () {
 
         fetch(confirmUrl).then(() => {
             removeAlert('notify', notifyId);
+            getAlerts(notifyUrl + '&phone=' + notifyPhone, function (alerts) {
+                appendAlerts(alerts, 'notify');
+            })
         });
     }
 
@@ -619,7 +624,7 @@ const whatsapp_helper = function () {
         '#popup_window > * {padding:12px 8px}' +
         '#popup_window header {background-color:rgba(99,99,99,.2)}' +
         '#popup_window header h4 {font-weight:bold;font-size:20px}' +
-        '#popup_window header span {padding:5px 10px;float:right;border-radius:4px;background-color:#882c2c;font-size:15px;margin:-1px 5px 0;cursor:pointer;color:#fff}');
+        '#popup_window header span#btn1221 {padding:5px 10px;float:right;border-radius:4px;background-color:#882c2c;font-size:15px;margin:-1px 5px 0;cursor:pointer;color:#fff}');
 
     window.popupIsLoading = false;
     window.showPopup = async (url) => {
@@ -634,7 +639,7 @@ const whatsapp_helper = function () {
             const chatMessagesWrapper = $('div._2wjK5');
             const popup = $('<div id="popup_window" style="background-color:' + data.msg[0].bColor + '">' +
                 '<header>' +
-                '<span onclick="closePopup(this)">Закрыть</span>' +
+                '<span id="btn1221" onclick="closePopup(this)">Закрыть</span>' +
                 '<h4 style="color:' + data.msg[0].tColor + '">' + data.msg[0].title + '</h4>' +
                 '</header>' +
                 '<div style="color:' + data.msg[0].tColor + '">' + data.msg[0].msg + '</div>' +
