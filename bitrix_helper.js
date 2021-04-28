@@ -1,4 +1,4 @@
-// ==UserScript== Обновлено 28 апреля 2021
+// ==UserScript== Обновлено 28 апреля 2021 - 2
 // @name         BITRIX helper 1.8.9
 // @namespace    http://tampermonkey.net/
 // @version      1.8.8
