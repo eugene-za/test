@@ -537,7 +537,7 @@ const bitrix_helper = function() {
             }
         }
 
-        //showComments();
+        showComments();
 
         /*
         * ----------------------------- Comment
