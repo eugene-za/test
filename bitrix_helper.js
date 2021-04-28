@@ -1,15 +1,4 @@
-// ==UserScript== Обновлено 28 апреля 2021 - 2
-// @name         BITRIX helper 1.8.9
-// @namespace    http://tampermonkey.net/
-// @version      1.8.8
-// @description  В тулбар добавлена кнопка Время записи. В плеер добавлена кнопка Контроль качества. Доработано: Автоматическое ускорение в плеере; Цвет напоминаний; Плоучение номера телефона
-// @author       You
-// @match        https://unirenter.bitrix24.ru/*
-// @grant        none
-// @require http://code.jquery.com/jquery-3.4.1.min.js
-// @require https://cdn.jsdelivr.net/npm/jquery.growl@1.3.5/javascripts/jquery.growl.min.js
-// @run-at document-end
-// ==/UserScript==
+// ==UserScript== Обновлено 28 апреля 2021 - 3
 
 /* global $ */
 
