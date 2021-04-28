@@ -13,7 +13,7 @@
 
 /* global $ */
 
-const bitrix_helper = function() {
+const bitrix_helper = function () {
 
     /*
     * --------------------------- Functions
@@ -345,7 +345,7 @@ const bitrix_helper = function() {
         }
 
         function removeAlert(alertsType, alertId) {
-            if(window.growls[alertsType].hasOwnProperty(alertId)){
+            if (window.growls[alertsType].hasOwnProperty(alertId)) {
                 window.growls[alertsType][alertId].remove();
             }
         }
@@ -585,14 +585,18 @@ const bitrix_helper = function() {
 
         window.showDocumentComments = function (param, eventTarget) {
             var notifyId = eventTarget.closest('div.growl[data-notify-id]').dataset.notifyId;
-            var confirmUrl = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?userID='+userID+'&ah='+userToken+'&doc=' + docType
+            var confirmUrl = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?userID=' + userID + '&ah=' + userToken + '&doc=' + docType
                 + '&id=' + docId + (docType === 'lead' ? '&phone=' + getPhoneNumber() : '');
-            if(param) confirmUrl += param;
+            if (param) confirmUrl += param;
 
             DEBUG_MODE && console.log('Do query to confirmUrl', confirmUrl);
 
             fetch(confirmUrl).then(() => {
                 removeAlert('comment', notifyId);
+                var url = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?userID='
+                    + userID + '&ah=' + userToken + '&doc=' + docType
+                    + '&id=' + docId + (docType === 'lead' ? '&phone=' + getPhoneNumber() : '');
+                showAlerts(url, 'comment');
             });
         }
 
