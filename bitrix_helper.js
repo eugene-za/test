@@ -345,7 +345,6 @@ const bitrix_helper = function() {
         }
 
         function removeAlert(alertsType, alertId) {
-            console.log(window.growls)
             if(window.growls[alertsType].hasOwnProperty(alertId)){
                 window.growls[alertsType][alertId].remove();
             }
