@@ -1,4 +1,4 @@
-// ==UserScript==
+// ==UserScript== Обновлено 28 апреля 2021
 // @name         BITRIX helper 1.8.9
 // @namespace    http://tampermonkey.net/
 // @version      1.8.8
@@ -344,6 +344,13 @@ const bitrix_helper = function() {
             }
         }
 
+        function removeAlert(alertsType, alertId) {
+            console.log(window.growls)
+            if(window.growls[alertsType].hasOwnProperty(alertId)){
+                window.growls[alertsType][alertId].remove();
+            }
+        }
+
         /*
         * ----------------------------- Toolbar
         */
@@ -531,7 +538,7 @@ const bitrix_helper = function() {
             }
         }
 
-        showComments();
+        //showComments();
 
         /*
         * ----------------------------- Comment
@@ -570,6 +577,23 @@ const bitrix_helper = function() {
                 textarea.value = commentText;
                 textarea.dispatchEvent(new Event('change'));
                 button.click();
+            });
+        }
+
+        /*
+        * ShowDocumentComments
+        * */
+
+        window.showDocumentComments = function (param, eventTarget) {
+            var notifyId = eventTarget.closest('div.growl[data-notify-id]').dataset.notifyId;
+            var confirmUrl = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?userID='+userID+'&ah='+userToken+'&doc=' + docType
+                + '&id=' + docId + (docType === 'lead' ? '&phone=' + getPhoneNumber() : '');
+            if(param) confirmUrl += param;
+
+            DEBUG_MODE && console.log('Do query to confirmUrl', confirmUrl);
+
+            fetch(confirmUrl).then(() => {
+                removeAlert('comment', notifyId);
             });
         }
 
