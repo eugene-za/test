@@ -1,4 +1,4 @@
-// ==UserScript== Обновлено 29 апреля 2021 - Popup
+// ==UserScript== Обновлено 29 апреля 2021 - Popup, Timetable
 
 /* global $ */
 
@@ -480,17 +480,15 @@ const bitrix_helper = function () {
         }
 
         function showRecordTime() {
-            var url = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?do=timetable&html=1&version=' + version + '&doc='
-                + docType + '&id=' + docId + '&userID=' + userID + '&ah=' + userToken;
-            reloadAlerts(url, 'recordtime');
+            showComments('&do=timetable');
         }
 
         var showCommentsInterval;
 
-        function showComments() {
+        function showComments(params = '') {
             var url = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?version=' + version + '&userID='
                 + userID + '&ah=' + userToken + '&doc=' + docType
-                + '&id=' + docId + (docType === 'lead' ? '&phone=' + getPhoneNumber() : '');
+                + '&id=' + docId + (docType === 'lead' ? '&phone=' + getPhoneNumber() : '') + params;
             reloadAlerts(url, 'comment');
             clearInterval(showCommentsInterval);
             showCommentsInterval = setInterval(function () {
