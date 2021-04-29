@@ -1,6 +1,8 @@
-// ==UserScript== Обновлено 28 апреля 2021 - 3
+// ==UserScript== Обновлено 29 апреля 2021 - Popup
 
 /* global $ */
+
+const version = '3';
 
 const bitrix_helper = function () {
 
@@ -213,13 +215,8 @@ const bitrix_helper = function () {
 
     addProductButtons();
 
-    on("body", "input", ".crm-item-name-inp", (target, evt) => {
-        //var value = target.target.value;
-        //var parsed = /(\d{6})(-|=)(\d{6})/.exec(value);
-        //if(parsed && parsed[1] && parsed[3]) {
+    on("body", "input", ".crm-item-name-inp", () => {
         addProductButtons();
-        //}
-        //else addProductButtons();
     });
 
     on("body", "click", ".bitrixHelper-productButton", (target, evt) => {
@@ -228,9 +225,7 @@ const bitrix_helper = function () {
         var parsedSk = /sk(-|_)(\d+)-(\d+)/.exec(field.value);
         var parsed = /(\d{6})(-|=)(\d{6})/.exec(field.value);
         if (parsedSk && parsedSk[2] && parsedSk[3]) {
-            //if(mode == 'comment')
-            // window.open('https://beta.crm.unirenter.ru/#/add-comment?dealID='+dealId+'&article='+parsed[1]+'&serial='+parsed[3]);
-            if (mode === 'info') window.open('https://a.unirenter.ru/b24/r.php?article=sk_' + parsedSk[2] + '-' + parsedSk[3]);//'https://beta.crm.unirenter.ru/#/info?article='+parsedSk[2]+'&serial='+parsedSk[3]);
+            if (mode === 'info') window.open('https://a.unirenter.ru/b24/r.php?article=sk_' + parsedSk[2] + '-' + parsedSk[3]);
         } else if (parsed && parsed[1] && parsed[3]) {
             if (mode === 'comment') window.open('https://beta.crm.unirenter.ru/#/add-comment?dealID=' + docId + '&article=' + parsed[1] + '&serial=' + parsed[3]);
             else if (mode === 'info') window.open('https://beta.crm.unirenter.ru/#/info?article=' + parsed[1] + '&serial=' + parsed[3]);
@@ -451,9 +446,6 @@ const bitrix_helper = function () {
                     });
                     break;
             }
-            if (docType === 'lead') {
-                showRecordTime();
-            }
             $('div.ui-btn-split.ui-btn-light-border.ui-btn-themes.intranet-binding-menu-btn').remove();
 
             //$('.pagetitle-wrap').append('<div class="pagetitle crm-pagetitle">'+$('.pagetitle.crm-pagetitle').html()+'</div>');
@@ -488,15 +480,15 @@ const bitrix_helper = function () {
         }
 
         function showRecordTime() {
-            var url = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?do=timetable&html=1&docType='
-                + docType + '&docID=' + docId + '&userID=' + userID + '&ah=' + userToken;
+            var url = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?do=timetable&html=1&version=' + version + '&doc='
+                + docType + '&id=' + docId + '&userID=' + userID + '&ah=' + userToken;
             reloadAlerts(url, 'recordtime');
         }
 
         var showCommentsInterval;
 
         function showComments() {
-            var url = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?userID='
+            var url = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?version=' + version + '&userID='
                 + userID + '&ah=' + userToken + '&doc=' + docType
                 + '&id=' + docId + (docType === 'lead' ? '&phone=' + getPhoneNumber() : '');
             reloadAlerts(url, 'comment');
@@ -569,12 +561,12 @@ const bitrix_helper = function () {
         }
 
         /*
-        * ShowDocumentComments
+        * ShowDocumentComments, showPopup
         * */
 
         window.showDocumentComments = function (param, eventTarget) {
             var notifyId = eventTarget.closest('div.growl[data-notify-id]').dataset.notifyId;
-            var confirmUrl = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?userID=' + userID + '&ah=' + userToken + '&doc=' + docType
+            var confirmUrl = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?version=' + version + '&userID=' + userID + '&ah=' + userToken + '&doc=' + docType
                 + '&id=' + docId + (docType === 'lead' ? '&phone=' + getPhoneNumber() : '');
             if (param) confirmUrl += param;
 
@@ -582,11 +574,50 @@ const bitrix_helper = function () {
 
             fetch(confirmUrl).then(() => {
                 removeAlert('comment', notifyId);
-                var url = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?userID='
+                var url = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?version=' + version + '&userID='
                     + userID + '&ah=' + userToken + '&doc=' + docType
                     + '&id=' + docId + (docType === 'lead' ? '&phone=' + getPhoneNumber() : '');
                 showAlerts(url, 'comment');
             });
+        }
+
+        /*
+        * ----------------------------- Popup
+        */
+        appendStyle('#popup_window {width:80vw;height:80vh;position:relative;position:absolute;top:10vh;left:10vw;z-index:100000;}' +
+            '#popup_window > * {padding:12px 8px}' +
+            '#popup_window header {background-color:rgba(99,99,99,.2)}' +
+            '#popup_window header h4 {font-weight:bold;font-size:20px;margin:0;padding:0}' +
+            '#popup_window header span#btn1221 {padding:5px 10px;float:right;border-radius:4px;background-color:#882c2c;font-size:15px;margin:-1px 5px 0;cursor:pointer;color:#fff}');
+
+        window.popupIsLoading = false;
+        window.showPopup = async (url) => {
+            url += '&version=' + version + '&userID=' + userID + '&ah=' + userToken + '&doc=' + docType
+                + '&id=' + docId + (docType === 'lead' ? '&phone=' + getPhoneNumber() : '');
+            if (popupIsLoading) return false;
+            popupIsLoading = true;
+            let alreadyPopup = document.getElementById('popup_window');
+            if (alreadyPopup) closePopup(alreadyPopup);
+            DEBUG_MODE && console.log('Query URL: ', url);
+            let data = await fetch(url).then(response => response.json());
+            DEBUG_MODE && console.log('Data: ', data);
+            if (data && data.hasOwnProperty('msg')) {
+                const chatMessagesWrapper = $('body');
+                console.log(chatMessagesWrapper);
+                const popup = $('<div id="popup_window" style="background-color:' + data.msg[0].bColor + '">' +
+                    '<header>' +
+                    '<span id="btn1221" onclick="closePopup(this)">Закрыть</span>' +
+                    '<h4 style="color:' + data.msg[0].tColor + '">' + data.msg[0].title + '</h4>' +
+                    '</header>' +
+                    '<div style="color:' + data.msg[0].tColor + '">' + data.msg[0].msg + '</div>' +
+                    '</div>');
+                chatMessagesWrapper.append(popup);
+                popupIsLoading = false;
+            }
+        }
+
+        window.closePopup = (element) => {
+            (element.id === 'popup_window' ? element : element.closest('div#popup_window')).remove();
         }
 
         /*

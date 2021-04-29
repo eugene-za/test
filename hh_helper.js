@@ -73,15 +73,14 @@ const hh_helper = function () {
         return new Promise(r => setTimeout(() => r(), ms))
     }
 
-    function addButton(index, html, callback) {
+    function addButton(index, html) {
         const buttonContainer = document.querySelector('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls');
         let buttons = buttonContainer.querySelectorAll('.candidates-button');
         const button = $('<span class="candidates-button">' + html + '</span>');
         index = typeof index === 'undefined' || !buttons[index] ? buttons.length : index;
-        console.log(button)
         buttonContainer.insertBefore(button[0], buttons[index]);
-        button.click(function (e) {
-            callback(this, e);
+        return new Promise((resolve, reject) => {
+            resolve(button[0]);
         });
     }
 
@@ -97,10 +96,14 @@ const hh_helper = function () {
     const selectorButtonNextPage = 'a.bloko-button.HH-Pager-Control[data-qa="pager-next"]';
     const selectorButtonFirstPage = 'a.bloko-button.HH-Pager-Control[data-page="0"]';
 
-    addButton(2, '<button type="submit" name="reject" class="bloko-button" id="grabVacancies" >Скачать CSV</button>', actionGrabVacancies);
+    const buttonGrabVacancies = addButton(2, '<button type="submit" name="reject" class="bloko-button" id="grabVacancies" >Скачать CSV</button>').then(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            actionGrabVacancies();
+        })
+    });
 
-    async function actionGrabVacancies(btn, e) {
-        e.preventDefault();
+    async function actionGrabVacancies() {
         let tempArrayVacancies = [];
         let containerVacancies = await waitForElement(selectorContainerVacancies);
 
@@ -246,12 +249,24 @@ const hh_helper = function () {
      * --------------------------------------------------------------------------------------------------------------
      */
 
-    addButton(0, '<input type="checkbox" title="Выбрать все">', actionSelectAllVacancies);
+    let buttonCheckboxSelectAll;
+    addButton(0, '<input type="checkbox" title="Выбрать все">').then(button=>{
+        buttonCheckboxSelectAll = button;
+        buttonCheckboxSelectAll.addEventListener('click', function (e) {
+            actionSelectAllVacancies();
+        });
+        watchDomMutation(selectorWrapperVacancies, document.querySelector(selectorContainerVacancies), () => {
+            actionSelectAllVacancies();
+        });
+    });
 
     function actionSelectAllVacancies() {
+        const checkbox = buttonCheckboxSelectAll.querySelector('input[type=checkbox]');
         let items = document.querySelectorAll(selectorContainerVacancies + ' ' + selectorVacancyItem);
         for (var item of items) {
-            eventFire(item.querySelector('.bloko-checkbox'), 'click');
+            if(checkbox.checked && !item.classList.contains('resume-search-item_checked') || !checkbox.checked && item.classList.contains('resume-search-item_checked')){
+                eventFire(item.querySelector('.bloko-checkbox'), 'click');
+            }
         }
     }
 

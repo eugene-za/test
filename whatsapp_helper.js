@@ -1,4 +1,4 @@
-// ==UserScript== Обновлено 28 апреля 2021 - 1
+// ==UserScript== Обновлено 29 апреля 2021 - Аргономика
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -623,7 +623,7 @@ const whatsapp_helper = function () {
     appendStyle('#popup_window {width:80%;height:80%;position:relative;z-index:100;margin:auto;margin-top:5%;}' +
         '#popup_window > * {padding:12px 8px}' +
         '#popup_window header {background-color:rgba(99,99,99,.2)}' +
-        '#popup_window header h4 {font-weight:bold;font-size:20px}' +
+        '#popup_window header h4 {font-weight:bold;font-size:20px;margin:0;padding:0}' +
         '#popup_window header span#btn1221 {padding:5px 10px;float:right;border-radius:4px;background-color:#882c2c;font-size:15px;margin:-1px 5px 0;cursor:pointer;color:#fff}');
 
     window.popupIsLoading = false;
@@ -633,6 +633,7 @@ const whatsapp_helper = function () {
         popupIsLoading = true;
         let alreadyPopup = document.getElementById('popup_window');
         if (alreadyPopup) closePopup(alreadyPopup);
+        DEBUG_MODE && console.log('Query URL: ', url);
         let data = await fetch(url).then(response => response.json());
         DEBUG_MODE && console.log('Data: ', data);
         if (data && data.hasOwnProperty('msg')) {
@@ -788,12 +789,14 @@ const whatsapp_helper = function () {
         '.growl:hover{opacity:1;}' +
         '.growl.growl-incoming{opacity:0}' +
         '.growl.growl-outgoing{opacity:0}' +
-        '.growl.growl-large{width:300px;padding:15px;margin:15px}' +
-        '.growl.growl-default{color:#fff;background:#535C69;box-shadow: 0 0 3px 1px rgba(255,255,255,.2);}' +
-        '.growl .growl-close{cursor:pointer;float:right;font-size:18px;line-height:18px;font-weight:400;font-family:helvetica,verdana,sans-serif}' +
-        '.growl .growl-title{font-size:12px;line-height:24px;font-weight:bold}.growl .growl-message{font-size:14px;line-height:18px}' +
-        '.close-all-alerts{display:none;margin-left:auto;margin-right:23px;padding: 5px 9px;color:#fff;border:none;background-color:#535C69;border-radius:4px;cursor:pointer;opacity:.8;transition:opacity .5s}' +
+        '.growl.growl-large{width:330px;padding:0;margin:5px 0px 0 10px}' +
+        '.growl.growl-default{color:#fff;background:#535C69;box-shadow: 0 0 3px 1px rgba(255,255,255,.2);overflow:hidden}' +
+        '.growl .growl-close{cursor:pointer;float:right;font-size:18px;line-height:17px;font-weight:bold;font-family:helvetica,verdana,sans-serif;width:19px;padding-top:1px;text-align:center;vertical-align:text-top;display:inline-block;color:#d8ff00;border-radius:50%;margin:2px 3px;background:#00000054; mix-blend-mode:overlay;border:.5px solid #00000008;}' +
+        '.growl .growl-close:hover{mix-blend-mode:difference;}' +
+        '.growl .growl-title{font-size:13px;line-height:1.1;font-weight:bold;text-transform:uppercase;background-color:#ffffff30;padding: 6px 15px 3px 8px;border-bottom: 1px solid #ffffff17;box-shadow:0 2px 9px 1px #8a8a8a40;}' +
+        '.close-all-alerts{display:none;margin-left:auto;padding: 5px 9px;color:#fff;border:none;background-color:#535C69;border-radius:4px;cursor:pointer;opacity:.8;transition:opacity .5s}' +
         '.close-all-alerts:hover{opacity:1}' +
+        '.growl .growl-message{padding:4px 10px 7px;line-height:1.1;}' +
         '.growl .growl-message span{cursor:pointer}' +
         '#growls-br a:hover,#growls-br *[onclick]:hover{text-decoration:underline}');
 
