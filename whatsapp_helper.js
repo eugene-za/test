@@ -1,4 +1,4 @@
-// ==UserScript== Обновлено 29 апреля 2021 - Аргономика
+// ==UserScript== Обновлено 30 апреля 2021 - Аргономика, Popup
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -638,12 +638,14 @@ const whatsapp_helper = function () {
         DEBUG_MODE && console.log('Data: ', data);
         if (data && data.hasOwnProperty('msg')) {
             const chatMessagesWrapper = $('div._2wjK5');
-            const popup = $('<div id="popup_window" style="background-color:' + data.msg[0].bColor + '">' +
+            let k = Object.keys(data.msg)[0];
+            let message = data.msg[k];
+            const popup = $('<div id="popup_window" style="background-color:' + message.bColor + '">' +
                 '<header>' +
                 '<span id="btn1221" onclick="closePopup(this)">Закрыть</span>' +
-                '<h4 style="color:' + data.msg[0].tColor + '">' + data.msg[0].title + '</h4>' +
+                '<h4 style="color:' + message.tColor + '">' + message.title + '</h4>' +
                 '</header>' +
-                '<div style="color:' + data.msg[0].tColor + '">' + data.msg[0].msg + '</div>' +
+                '<div style="color:' + message.tColor + '">' + message.msg + '</div>' +
                 '</div>');
             chatMessagesWrapper.append(popup);
             popupIsLoading = false;
