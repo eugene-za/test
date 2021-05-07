@@ -790,8 +790,11 @@ const whatsapp_helper = function () {
     function watchContactList(){
         function updateMsgCount(target) {
             let contactNode = target.closest('div._2aBzC');
-            let contactPhoneOrName = contactNode.querySelector('div._3Dr46 > span:first-child').textContent;
-            urlContactParams = isValidPhone(contactPhoneOrName)
+            let contactPhoneOrNameFromGroup = contactNode.querySelector('span._1DB2K span._1adfa:not(._35k-1)');
+            let contactPhoneOrName = (contactPhoneOrNameFromGroup
+                ? contactPhoneOrNameFromGroup
+                : contactNode.querySelector('div._3Dr46 > span:first-child')).textContent;
+            let urlContactParams = isValidPhone(contactPhoneOrName)
                 ? ('&phone=' + contactPhoneOrName.replace(/[\D]/gi, ''))
                 : ('&contact=' + contactPhoneOrName);
             let messagesCount = target.textContent || 0;
@@ -801,7 +804,8 @@ const whatsapp_helper = function () {
                 let url = 'https://a.unirenter.ru//b24/api/whatsapp.php?do=whatsappIncomeMsg&version='
                 + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID
                 + urlContactParams;
-                fetch(url);
+                //fetch(url);
+                console.log(url);
 
             }
             contactsUnreadCount[contactName] = messagesCount;
