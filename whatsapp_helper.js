@@ -1,4 +1,4 @@
-// ==UserScript== Обновлено 7 мая 2021 - 2
+// ==UserScript== Обновлено 7 мая 2021 - 3
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -804,8 +804,7 @@ const whatsapp_helper = function () {
                 let url = 'https://a.unirenter.ru//b24/api/whatsapp.php?do=whatsappIncomeMsg&version='
                 + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID
                 + urlContactParams;
-                //fetch(url);
-                console.log(url);
+                fetch(url);
 
             }
             contactsUnreadCount[contactName] = messagesCount;
