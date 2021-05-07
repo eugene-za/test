@@ -1,4 +1,4 @@
-// ==UserScript== Обновлено 30 апреля 2021 - Аргономика, Popup
+// ==UserScript== Обновлено 7 мая 2021
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -7,7 +7,7 @@
 * 3. ------Добавление кнопок...
 * 4. Оповещения, showDocumentComments(), showPopup(url)
 * 5. Загрузка выбраных сообщений на unirenter server
-*
+* 6. Уведомления о получении новых сообщений
 */
 
 const whatsapp_helper = function () {
@@ -183,6 +183,8 @@ const whatsapp_helper = function () {
             // добавление кнопок в левый сайдбар
             addOpenChatByPhoneButton();
             addMassMessagingButton();
+            //
+            watchContactList();
         }
     }, 200);
 
@@ -565,29 +567,27 @@ const whatsapp_helper = function () {
 
     var notifyUrl = 'https://a.unirenter.ru//b24/api/notifyService.php?do=notifyWhatsapp&version=' + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID;
 
-    var notifyPhone = null;
+    //var notifyPhone = null;
+    var urlContactParams = null;
 
     var notifyInterval;
     watchDomMutation('#main', document.body, function (divMAin) {
-        newNotifyPhone = divMAin.querySelector('header span[dir=auto]').innerText.replace(/[\D]/gi, '');
+        let notifyPhoneOrContactText = divMAin.querySelector('header span[dir=auto]').innerText;
+        newNotifyPhone = notifyPhoneOrContactText.replace(/[\D]/gi, '');
 
-        if (!newNotifyPhone || newNotifyPhone !== notifyPhone) {
+        urlContactParamsNew = newNotifyPhone ? ('&phone=' + newNotifyPhone) : ('&contact=' + notifyPhoneOrContactText);
+
+        if (urlContactParamsNew !== urlContactParams) {
             clearInterval(notifyInterval);
             isShowAlerts('notify') && removeAlerts('notify');
             window.growls['notify'] = {};
-        }
-        if (notifyPhone !== newNotifyPhone) {
-            notifyPhone = newNotifyPhone;
-            if (notifyPhone.length === 11) {
-                reloadAlerts(notifyUrl + '&phone=' + notifyPhone, 'notify');
-                notifyInterval = setInterval(function () {
-                    getAlerts(notifyUrl + '&phone=' + notifyPhone, function (alerts) {
-                        appendAlerts(alerts, 'notify');
-                    })
-                }, 3000);
-            } else {
-                console.warn('Получение оповещений не удалось: неверный номер телефона ', notifyPhone);
-            }
+            urlContactParams = urlContactParamsNew;
+            reloadAlerts(notifyUrl + urlContactParamsNew, 'notify');
+            notifyInterval = setInterval(function () {
+                getAlerts(notifyUrl + urlContactParamsNew, function (alerts) {
+                    appendAlerts(alerts, 'notify');
+                })
+            }, 3000);
         }
     });
 
@@ -598,20 +598,20 @@ const whatsapp_helper = function () {
         button3.src = 'https://a.unirenter.ru/b24/img/alert.png';
         button3.title = 'Получить оповещения';
         button3.addEventListener('click', () => {
-            reloadAlerts(notifyUrl + '&phone=' + notifyPhone, 'notify');
+            reloadAlerts(notifyUrl + urlContactParamsNew, 'notify');
         });
         parent.insertAdjacentElement('afterbegin', button3);
     }
 
     window.showDocumentComments = function (param, eventTarget) {
         var notifyId = eventTarget.closest('div.growl[data-notify-id]').dataset.notifyId;
-        var confirmUrl = notifyUrl + param + '&id=' + notifyId + '&phone=' + notifyPhone;
+        var confirmUrl = notifyUrl + param + '&id=' + notifyId + urlContactParamsNew;
 
         DEBUG_MODE && console.log('Do query to confirmUrl', confirmUrl);
 
         fetch(confirmUrl).then(() => {
             removeAlert('notify', notifyId);
-            getAlerts(notifyUrl + '&phone=' + notifyPhone, function (alerts) {
+            getAlerts(notifyUrl + urlContactParamsNew, function (alerts) {
                 appendAlerts(alerts, 'notify');
             })
         });
@@ -775,6 +775,67 @@ const whatsapp_helper = function () {
 
         messagesSelectPanel.childNodes[1].after(uploadToServerButton);
     });
+
+    /**
+     * --------------------------------------------------------------------------------------------------------------
+     * 6. Уведомления о получении новых сообщений
+     * --------------------------------------------------------------------------------------------------------------
+     */
+
+
+    var contactsUnreadCount = {};
+    function watchContactList(){
+        function updateMsgCount(target) {
+            let contactNode = target.closest('div._2aBzC');
+            let contactName = contactNode.querySelector('span.N2dUK').textContent;
+            let messagesCount = target.textContent || 0;
+            if(!contactsUnreadCount.hasOwnProperty(contactName) ||
+                (contactsUnreadCount.hasOwnProperty(contactName) && contactsUnreadCount[contactName] < messagesCount)){
+
+                let url = 'https://a.unirenter.ru//b24/api/whatsapp.php?do=whatsappIncomeMsg&version='
+                + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID
+                + '&phone=' + contactName;
+                fetch(url);
+
+            }
+            contactsUnreadCount[contactName] = messagesCount;
+        }
+        var ob = new MutationObserver((mutationsList, observer) => {
+            for (let mutation of mutationsList) {
+                if (mutation.type !== 'childList' && mutation.type !== 'characterData') {
+                    continue;
+                }
+                switch (mutation.type) {
+                    case 'childList':
+                        let indicator = mutation.target.querySelector('span._38M1B')
+                        if(indicator){
+                            updateMsgCount(indicator);
+                        } else if(mutation.removedNodes.length){
+                            Array.from(mutation.removedNodes).forEach(function (node) {
+                                if (!(node instanceof Element)) {
+                                    return;
+                                }
+                                if (node.matches('div._2TiQe')) {
+                                    updateMsgCount(mutation.target.parentNode);
+                                }
+                            });
+                        }
+                        break;
+                    case 'characterData':
+                        if(mutation.target.parentNode.matches('span._38M1B')){
+                            updateMsgCount(mutation.target.parentNode);
+                        }
+                        break;
+                }
+            }
+        });
+        ob.observe(document.querySelector('#side .JnmQF._3QmOg'), {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+
+    }
 
     /**
      * --------------------------------------------------------------------------------------------------------------
