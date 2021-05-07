@@ -1,4 +1,4 @@
-// ==UserScript== Обновлено 7 мая 2021
+// ==UserScript== Обновлено 7 мая 2021 - 2
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -127,6 +127,10 @@ const whatsapp_helper = function () {
             : phoneNumber.length === 11
                 ? phoneNumber.replace(/^8/g, '7')
                 : phoneNumber;
+    }
+
+    function isValidPhone(phone) {
+        return /^(\+{0,})(\d{0,})([(]{1}\d{1,3}[)]{0,}){0,}(\s?\d+|\+\d{2,3}\s{1}\d+|\d+){1}[\s|-]?\d+([\s|-]?\d+){1,2}(\s){0,}$/.test(phone);
     }
 
     // Функция открытия чата по номеру телефона. Возвращает Promise
@@ -573,9 +577,9 @@ const whatsapp_helper = function () {
     var notifyInterval;
     watchDomMutation('#main', document.body, function (divMAin) {
         let notifyPhoneOrContactText = divMAin.querySelector('header span[dir=auto]').innerText;
-        newNotifyPhone = notifyPhoneOrContactText.replace(/[\D]/gi, '');
-
-        urlContactParamsNew = newNotifyPhone ? ('&phone=' + newNotifyPhone) : ('&contact=' + notifyPhoneOrContactText);
+        urlContactParamsNew = isValidPhone(notifyPhoneOrContactText)
+            ? ('&phone=' + notifyPhoneOrContactText.replace(/[\D]/gi, ''))
+            : ('&contact=' + notifyPhoneOrContactText);
 
         if (urlContactParamsNew !== urlContactParams) {
             clearInterval(notifyInterval);
@@ -782,19 +786,21 @@ const whatsapp_helper = function () {
      * --------------------------------------------------------------------------------------------------------------
      */
 
-
     var contactsUnreadCount = {};
     function watchContactList(){
         function updateMsgCount(target) {
             let contactNode = target.closest('div._2aBzC');
-            let contactName = contactNode.querySelector('span.N2dUK').textContent;
+            let contactPhoneOrName = contactNode.querySelector('div._3Dr46 > span:first-child').textContent;
+            urlContactParams = isValidPhone(contactPhoneOrName)
+                ? ('&phone=' + contactPhoneOrName.replace(/[\D]/gi, ''))
+                : ('&contact=' + contactPhoneOrName);
             let messagesCount = target.textContent || 0;
-            if(!contactsUnreadCount.hasOwnProperty(contactName) ||
-                (contactsUnreadCount.hasOwnProperty(contactName) && contactsUnreadCount[contactName] < messagesCount)){
+            if(!contactsUnreadCount.hasOwnProperty(contactPhoneOrName) ||
+                (contactsUnreadCount.hasOwnProperty(contactPhoneOrName) && contactsUnreadCount[contactPhoneOrName] < messagesCount)){
 
                 let url = 'https://a.unirenter.ru//b24/api/whatsapp.php?do=whatsappIncomeMsg&version='
                 + version + '&ah=' + hash + '&userID=' + userID + '&phoneID=' + phoneID
-                + '&phone=' + contactName;
+                + urlContactParams;
                 fetch(url);
 
             }
