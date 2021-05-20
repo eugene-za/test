@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 20мая2021 - 1803');
+    console.warn('Обновление: 20мая2021 - 10');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -278,6 +278,9 @@ const whatsapp_helper = function () {
                 '<svg width="27px" height="27px" fill="#777" fill-rule="evenodd" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg"><path d="m49 125v99c0 3 2 6 5 6h132c2 0 4-3 4-6v-99c0-3-3-6-6-6h-128c-4 0-7 2-7 6zm74 63 44-41 10-9v75c0 3-2 5-3 5h-108c-2 0-4-2-4-5v-75l11 9 44 41c1 1 2 1 3 1s2 0 3-1zm27-41 18-15h-96l18 15 26 24c1 1 3 2 4 2 2 0 3-1 4-2l26-24zm-39-97c0 13-1 40 0 52 0 10 16 12 18 0v-52l18 17c2 3 9 11 16 4 2-1 3-4 3-7 0-5-5-8-10-13l-28-29c-9-8-13-3-20 4l-31 31c-9 9 2 23 13 13 5-4 18-18 21-20zm-111 19v29c0 10 6 14 12 11 8-2 6-11 6-21 3 2 4 4 6 6l6 6c3 2 4 4 6 6 3 3 4 4 9 4 2 0 5-2 6-3 4-4 3-10-2-14-3-4-16-16-17-18 7 0 15 1 19-3 5-6 2-16-8-16h-33c-3 0-6 1-8 3s-2 6-2 10zm208 6c-5 8-22 16-22 27 0 3 4 8 10 8 5 0 8-5 13-10l12-12c0 9-1 18 5 21 8 3 14-2 14-9v-33c0-7-4-11-11-11h-32c-10 0-13 9-10 14 4 7 12 5 21 5z"/></svg>' +
                 '<span id="restMessagesCountIndicator"></span>' +
                 '</div>');
+        //todo TEST
+        $($('#app #side header._1R3Un'))
+            .prepend('<a href="https://web.whatsapp.com/send?phone=79259336744&text=79259336744" id="openChatAPI" target="_self" rel="noopener noreferrer" class="_3-8er selectable-text copyable-text">TEST</a>');
         // Индикатор колличества сообщений в очереди
         restMessagesCountIndicator = $('#restMessagesCountIndicator');
         // Запуск рассылки
