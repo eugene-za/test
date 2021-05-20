@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 20мая2021 - 1445');
+    console.warn('Обновление: 20мая2021 - 1541');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
