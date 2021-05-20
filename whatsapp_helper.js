@@ -136,7 +136,7 @@ const whatsapp_helper = function () {
 
     // Функция открытия чата по номеру телефона. Возвращает Promise
     function openChatByPhone(phoneNumber, messageText) {
-        whatsappApiLink.href = 'https://api.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
+        whatsappApiLink.href = 'https://web.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
         whatsappApiLink.click();
         return new Promise(function (resolve, reject) {
             var observer = new MutationObserver(function (mutations) {
