@@ -122,7 +122,7 @@ const whatsapp_helper = function () {
 
     // Функция форматирования номера телефона
     function formatPhoneNumber(phoneNumber) {
-        phoneNumber = phoneNumber.replace(/^(\+)|\D/g, "$1");
+        phoneNumber = phoneNumber.replace(/\D/g,'');
         return phoneNumber.length === 10
             ? '7' + phoneNumber
             : phoneNumber.length === 11
