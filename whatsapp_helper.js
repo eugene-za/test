@@ -173,7 +173,7 @@ const whatsapp_helper = function () {
             clearInterval(waitForAppInterval);
 
             // добавление ссылки для whatsapp api
-            app.append('<a href="" id="openChatAPI"></a>');
+            app.append('<a href="" id="openChatAPI" target="_blank" rel="noopener noreferrer" class="_3-8er selectable-text copyable-text"></a>');
             whatsappApiLink = $('#openChatAPI')[0];
 
         }
