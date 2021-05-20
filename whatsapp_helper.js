@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 20мая2021 - 1541');
+    console.warn('Обновление: 20мая2021 - 1803');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -174,7 +174,7 @@ const whatsapp_helper = function () {
             clearInterval(waitForAppInterval);
 
             // добавление ссылки для whatsapp api
-            app.append('<a href="" id="openChatAPI" target="_blank" rel="noopener noreferrer" class="_3-8er selectable-text copyable-text"></a>');
+            app.append('<a href="" id="openChatAPI" target="_self" rel="noopener noreferrer" class="_3-8er selectable-text copyable-text"></a>');
             whatsappApiLink = $('#openChatAPI')[0];
 
         }
