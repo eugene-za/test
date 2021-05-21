@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 21мая2021 - 2');
+    console.warn('Обновление: 21мая2021 - 3');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -50,7 +50,8 @@ const whatsapp_helper = function () {
 
     // function for triggering mouse events
     function eventFire(elem, type, centerX, centerY) {
-        var evt = document.createEvent('MouseEvents')
+        var evt = document.createEvent('MouseEvents');
+        //todo: depricated initMouseEvent
         evt.initMouseEvent(
             type,
             true,
@@ -68,6 +69,11 @@ const whatsapp_helper = function () {
             0,
             elem
         )
+        new MouseEvent(type, {
+            view: window,
+            bubbles: true,
+            cancelable: true
+        });
         elem.dispatchEvent(evt)
     }
 
@@ -137,8 +143,8 @@ const whatsapp_helper = function () {
     // Функция открытия чата по номеру телефона. Возвращает Promise
     function openChatByPhone(phoneNumber, messageText) {
         whatsappApiLink.href = 'https://web.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
-        eventFire(whatsappApiLink, 'hover');
-        eventFire(whatsappApiLink, 'focus');
+
+        eventFire(whatsappApiLink, 'mouseover');
         whatsappApiLink.click();
         return new Promise(function (resolve, reject) {
             var observer = new MutationObserver(function (mutations) {
@@ -151,7 +157,7 @@ const whatsapp_helper = function () {
                         observer.disconnect();
                         let textarea = mutation.target.querySelector('.copyable-text[data-tab="6"]');
                         textarea.innerHTML = messageText || '';
-                        eventFire(textarea, 'click');
+                        eventFire(textarea, 'input');
                         resolve(mutation.target.closest('div.vR1LG._3wXwX.copyable-area'));
                     }
                 });
@@ -281,8 +287,9 @@ const whatsapp_helper = function () {
                 '<span id="restMessagesCountIndicator"></span>' +
                 '</div>');
         //todo TEST
+        appendStyle('#sendMessageApiButton{display:block;position:relative;left:9px;}');
         $($('#app #side header div')[4])
-            .prepend('<a style="display:block;position:relative;left:9px;" href="https://web.whatsapp.com/send?phone=79259336744" target="_self" rel="noopener noreferrer" class="_3-8er selectable-text copyable-text" title="Если не работает открытие чата по номеру">*</a>');
+            .prepend('<a id="sendMessageApiButton" href="https://web.whatsapp.com/send?phone=79259336744" target="_self" rel="noopener noreferrer" class="_3-8er selectable-text copyable-text" title="Если не работает открытие чата по номеру">*</a>');
 
         // Индикатор колличества сообщений в очереди
         restMessagesCountIndicator = $('#restMessagesCountIndicator');
