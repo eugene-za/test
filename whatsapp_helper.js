@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 21мая2021 - 1');
+    console.warn('Обновление: 21мая2021 - 2');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -137,8 +137,9 @@ const whatsapp_helper = function () {
     // Функция открытия чата по номеру телефона. Возвращает Promise
     function openChatByPhone(phoneNumber, messageText) {
         whatsappApiLink.href = 'https://web.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
-        //whatsappApiLink.click();
-        eventFire(whatsappApiLink, 'click');
+        eventFire(whatsappApiLink, 'hover');
+        eventFire(whatsappApiLink, 'focus');
+        whatsappApiLink.click();
         return new Promise(function (resolve, reject) {
             var observer = new MutationObserver(function (mutations) {
                 mutations.forEach(function (mutation) {
@@ -150,7 +151,7 @@ const whatsapp_helper = function () {
                         observer.disconnect();
                         let textarea = mutation.target.querySelector('.copyable-text[data-tab="6"]');
                         textarea.innerHTML = messageText || '';
-                        textarea.click();
+                        eventFire(textarea, 'click');
                         resolve(mutation.target.closest('div.vR1LG._3wXwX.copyable-area'));
                     }
                 });
