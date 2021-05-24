@@ -1,4 +1,4 @@
-// ==UserScript== Обновлено 24 мая 2021 - 1
+// ==UserScript== Обновлено 21 мая 2021
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 24 мая 2021 - 1');
+    console.warn('Обновление: 21мая2021 - 3');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -129,11 +129,15 @@ const whatsapp_helper = function () {
     // Функция форматирования номера телефона
     function formatPhoneNumber(phoneNumber) {
         phoneNumber = phoneNumber.replace(/\D/g,'');
-        return phoneNumber.length === 10
+
+        phoneNumber = phoneNumber.length === 10
             ? '7' + phoneNumber
-            : phoneNumber.length === 11
+            : (phoneNumber.length === 11
                 ? phoneNumber.replace(/^8/g, '7')
-                : phoneNumber;
+                : phoneNumber);
+
+        DEBUG_MODE && console.log('Отфориматированый phoneNumber = ' + phoneNumber);
+        return phoneNumber;
     }
 
     function isValidPhone(phone) {
@@ -141,16 +145,13 @@ const whatsapp_helper = function () {
     }
 
     // Функция открытия чата по номеру телефона. Возвращает Promise
+    var whatsappApiLink;
     function openChatByPhone(phoneNumber, messageText) {
-        /*whatsappApiLink.href = 'https://web.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
+        whatsappApiLink.href = 'https://api.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
 
-        eventFire(whatsappApiLink, 'mouseover');
-        whatsappApiLink.click();*/
-
-        const apiLink = document.getElementById('sendMessageApiButton');
-        apiLink.href = 'https://web.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
-        apiLink.click();
-
+        //eventFire(whatsappApiLink, 'mouseover');
+        DEBUG_MODE && console.log("Клик по ссылке: ",  whatsappApiLink);
+        whatsappApiLink.click();
         return new Promise(function (resolve, reject) {
             var observer = new MutationObserver(function (mutations) {
                 mutations.forEach(function (mutation) {
@@ -176,7 +177,6 @@ const whatsapp_helper = function () {
     }
 
     // ---*** ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ***---
-    //var whatsappApiLink;
 
     // ---*** СОБЫТИЯ ***---
 
@@ -186,9 +186,9 @@ const whatsapp_helper = function () {
         if (app) {
             clearInterval(waitForAppInterval);
 
-            /*// добавление ссылки для whatsapp api
-            app.append('<a href="" id="openChatAPI" target="_self" rel="noopener noreferrer" class="_3-8er selectable-text copyable-text"></a>');
-            whatsappApiLink = $('#openChatAPI')[0];*/
+            // добавление ссылки для whatsapp api
+            app.append('<a href="" id="openChatAPI"></a>');
+            whatsappApiLink = $('#openChatAPI')[0];
 
         }
     }, 200);
@@ -246,6 +246,7 @@ const whatsapp_helper = function () {
         });
         // Обращение к Whatsapp API через клик по ссылке
         $('#phoneFormContainer form').on('submit', function (e) {
+            DEBUG_MODE && console.log("Отправка формы: ",  e.target);
             e.preventDefault();
             let phoneNumber = formatPhoneNumber(input.val());
             input.val(phoneNumber);
@@ -262,10 +263,10 @@ const whatsapp_helper = function () {
         // Действие при вставке номера телефона в форму или вне ее
         window.addEventListener('paste', function (e) {
             if (e.clipboardData.getData('text')) {
-                e.preventDefault();
                 let phoneNumber = formatPhoneNumber(e.clipboardData.getData('text'));
                 $('#phoneFormContainer input').val(phoneNumber);
-                $('#phoneFormContainer form').submit();
+                $('#phoneFormContainer form button[type="submit"]').click();
+                e.preventDefault();
             }
         });
     }
@@ -291,11 +292,6 @@ const whatsapp_helper = function () {
                 '<svg width="27px" height="27px" fill="#777" fill-rule="evenodd" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg"><path d="m49 125v99c0 3 2 6 5 6h132c2 0 4-3 4-6v-99c0-3-3-6-6-6h-128c-4 0-7 2-7 6zm74 63 44-41 10-9v75c0 3-2 5-3 5h-108c-2 0-4-2-4-5v-75l11 9 44 41c1 1 2 1 3 1s2 0 3-1zm27-41 18-15h-96l18 15 26 24c1 1 3 2 4 2 2 0 3-1 4-2l26-24zm-39-97c0 13-1 40 0 52 0 10 16 12 18 0v-52l18 17c2 3 9 11 16 4 2-1 3-4 3-7 0-5-5-8-10-13l-28-29c-9-8-13-3-20 4l-31 31c-9 9 2 23 13 13 5-4 18-18 21-20zm-111 19v29c0 10 6 14 12 11 8-2 6-11 6-21 3 2 4 4 6 6l6 6c3 2 4 4 6 6 3 3 4 4 9 4 2 0 5-2 6-3 4-4 3-10-2-14-3-4-16-16-17-18 7 0 15 1 19-3 5-6 2-16-8-16h-33c-3 0-6 1-8 3s-2 6-2 10zm208 6c-5 8-22 16-22 27 0 3 4 8 10 8 5 0 8-5 13-10l12-12c0 9-1 18 5 21 8 3 14-2 14-9v-33c0-7-4-11-11-11h-32c-10 0-13 9-10 14 4 7 12 5 21 5z"/></svg>' +
                 '<span id="restMessagesCountIndicator"></span>' +
                 '</div>');
-        //todo TEST
-        appendStyle('#sendMessageApiButton{opacity:0;position:relative;left:9px;}');
-        $($('#app #side header div')[4])
-            .prepend('<a id="sendMessageApiButton" href="https://web.whatsapp.com/send?phone=79259336744" target="_self" rel="noopener noreferrer" class="_3-8er selectable-text copyable-text" title="Если не работает открытие чата по номеру">*</a>');
-
         // Индикатор колличества сообщений в очереди
         restMessagesCountIndicator = $('#restMessagesCountIndicator');
         // Запуск рассылки
