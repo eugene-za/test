@@ -1,4 +1,4 @@
-// ==UserScript== Обновлено 21 мая 2021
+// ==UserScript== Обновление: 24 мая 2021 - рабочая
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 21мая2021 - 3');
+    console.warn('Обновление: 24 мая 2021 - рабочая');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -129,15 +129,11 @@ const whatsapp_helper = function () {
     // Функция форматирования номера телефона
     function formatPhoneNumber(phoneNumber) {
         phoneNumber = phoneNumber.replace(/\D/g,'');
-
-        phoneNumber = phoneNumber.length === 10
+        return phoneNumber.length === 10
             ? '7' + phoneNumber
-            : (phoneNumber.length === 11
+            : phoneNumber.length === 11
                 ? phoneNumber.replace(/^8/g, '7')
-                : phoneNumber);
-
-        DEBUG_MODE && console.log('Отфориматированый phoneNumber = ' + phoneNumber);
-        return phoneNumber;
+                : phoneNumber;
     }
 
     function isValidPhone(phone) {
@@ -145,13 +141,12 @@ const whatsapp_helper = function () {
     }
 
     // Функция открытия чата по номеру телефона. Возвращает Promise
-    var whatsappApiLink;
     function openChatByPhone(phoneNumber, messageText) {
+        var whatsappApiLink = document.getElementById('openChatAPI');
         whatsappApiLink.href = 'https://api.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
-
-        //eventFire(whatsappApiLink, 'mouseover');
-        DEBUG_MODE && console.log("Клик по ссылке: ",  whatsappApiLink);
-        whatsappApiLink.click();
+        if ( '' != phoneNumber && '' != whatsappApiLink.href ) {
+            whatsappApiLink.click()
+        }
         return new Promise(function (resolve, reject) {
             var observer = new MutationObserver(function (mutations) {
                 mutations.forEach(function (mutation) {
@@ -188,7 +183,6 @@ const whatsapp_helper = function () {
 
             // добавление ссылки для whatsapp api
             app.append('<a href="" id="openChatAPI"></a>');
-            whatsappApiLink = $('#openChatAPI')[0];
 
         }
     }, 200);
@@ -246,7 +240,6 @@ const whatsapp_helper = function () {
         });
         // Обращение к Whatsapp API через клик по ссылке
         $('#phoneFormContainer form').on('submit', function (e) {
-            DEBUG_MODE && console.log("Отправка формы: ",  e.target);
             e.preventDefault();
             let phoneNumber = formatPhoneNumber(input.val());
             input.val(phoneNumber);
@@ -263,10 +256,10 @@ const whatsapp_helper = function () {
         // Действие при вставке номера телефона в форму или вне ее
         window.addEventListener('paste', function (e) {
             if (e.clipboardData.getData('text')) {
+                e.preventDefault();
                 let phoneNumber = formatPhoneNumber(e.clipboardData.getData('text'));
                 $('#phoneFormContainer input').val(phoneNumber);
-                $('#phoneFormContainer form button[type="submit"]').click();
-                e.preventDefault();
+                $('#phoneFormContainer form').submit();
             }
         });
     }
