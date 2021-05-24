@@ -1,4 +1,4 @@
-// ==UserScript== Обновление: 24 мая 2021 - рабочая
+// ==UserScript== Обновление: 24 мая 2021 - рабочая 1
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 24 мая 2021 - рабочая');
+    console.warn('Обновление: 24 мая 2021 - рабочая 1');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -145,7 +145,7 @@ const whatsapp_helper = function () {
         var whatsappApiLink = document.getElementById('openChatAPI');
         whatsappApiLink.href = 'https://api.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
         if ( '' != phoneNumber && '' != whatsappApiLink.href ) {
-            whatsappApiLink.click()
+            whatsappApiLink.click();
         }
         return new Promise(function (resolve, reject) {
             var observer = new MutationObserver(function (mutations) {
@@ -178,7 +178,7 @@ const whatsapp_helper = function () {
     // ОЖИДАНИЕ #app
     var waitForAppInterval = setInterval(function () {
         let app = $('#app');
-        if (app) {
+        if (app[0]) {
             clearInterval(waitForAppInterval);
 
             // добавление ссылки для whatsapp api
