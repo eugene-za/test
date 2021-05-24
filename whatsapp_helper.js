@@ -1,4 +1,4 @@
-// ==UserScript== Обновление: 24 мая 2021 - рабочая 1
+// ==UserScript== Обновление: 24 мая 2021 - 99%
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 24 мая 2021 - рабочая 1');
+    console.warn('Обновление: 24 мая 2021 - рабочая 99%');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -177,13 +177,8 @@ const whatsapp_helper = function () {
 
     // ОЖИДАНИЕ #app
     var waitForAppInterval = setInterval(function () {
-        let app = $('#app');
-        if (app[0]) {
+        if ($('#app')[0]) {
             clearInterval(waitForAppInterval);
-
-            // добавление ссылки для whatsapp api
-            app.append('<a href="" id="openChatAPI"></a>');
-
         }
     }, 200);
 
@@ -192,6 +187,8 @@ const whatsapp_helper = function () {
         if ($('#side')[0]) {
             clearInterval(waitForSidebarInterval);
 
+            // добавление ссылки для whatsapp api
+            $('#app').append('<a href="" id="openChatAPI"></a>');
             // добавление кнопок в левый сайдбар
             addOpenChatByPhoneButton();
             addMassMessagingButton();
