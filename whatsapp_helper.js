@@ -1,4 +1,4 @@
-// ==UserScript== Обновлено 21 мая 2021
+// ==UserScript== Обновлено 24 мая 2021 - 1
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 21мая2021 - 3');
+    console.warn('Обновление: 24 мая 2021 - 1');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -142,10 +142,15 @@ const whatsapp_helper = function () {
 
     // Функция открытия чата по номеру телефона. Возвращает Promise
     function openChatByPhone(phoneNumber, messageText) {
-        whatsappApiLink.href = 'https://web.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
+        /*whatsappApiLink.href = 'https://web.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
 
         eventFire(whatsappApiLink, 'mouseover');
-        whatsappApiLink.click();
+        whatsappApiLink.click();*/
+
+        const apiLink = document.getElementById('sendMessageApiButton');
+        apiLink.href = 'https://web.whatsapp.com/send?phone=' + phoneNumber + '&text=' + phoneNumber;
+        apiLink.click();
+
         return new Promise(function (resolve, reject) {
             var observer = new MutationObserver(function (mutations) {
                 mutations.forEach(function (mutation) {
@@ -171,7 +176,7 @@ const whatsapp_helper = function () {
     }
 
     // ---*** ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ***---
-    var whatsappApiLink;
+    //var whatsappApiLink;
 
     // ---*** СОБЫТИЯ ***---
 
@@ -181,9 +186,9 @@ const whatsapp_helper = function () {
         if (app) {
             clearInterval(waitForAppInterval);
 
-            // добавление ссылки для whatsapp api
+            /*// добавление ссылки для whatsapp api
             app.append('<a href="" id="openChatAPI" target="_self" rel="noopener noreferrer" class="_3-8er selectable-text copyable-text"></a>');
-            whatsappApiLink = $('#openChatAPI')[0];
+            whatsappApiLink = $('#openChatAPI')[0];*/
 
         }
     }, 200);
@@ -287,7 +292,7 @@ const whatsapp_helper = function () {
                 '<span id="restMessagesCountIndicator"></span>' +
                 '</div>');
         //todo TEST
-        appendStyle('#sendMessageApiButton{display:block;position:relative;left:9px;}');
+        appendStyle('#sendMessageApiButton{opacity:0;position:relative;left:9px;}');
         $($('#app #side header div')[4])
             .prepend('<a id="sendMessageApiButton" href="https://web.whatsapp.com/send?phone=79259336744" target="_self" rel="noopener noreferrer" class="_3-8er selectable-text copyable-text" title="Если не работает открытие чата по номеру">*</a>');
 
