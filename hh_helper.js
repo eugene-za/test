@@ -197,7 +197,7 @@ const hh_helper = function () {
     }
 
     function getPhoneNumbersFromString(str){
-        return str.match(/(\+{0,})(\d{0,})( [(]{1}\d{1,3}[)] {0,}){0,}(\s?\d+|\+\d{2,3}\s{1}\d+|\d+){1}[\s|-]?\d+([\s|-]?\d+){0,}/g);
+        return str.match(/(\+)?(\(\d{2,3}\) ?\d|\d)(([ \-]?\d)|( ?\(\d{2,3}\) ?)){5,12}\d/g);
     }
 
     async function grabVacancyItem(item) {
