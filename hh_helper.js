@@ -214,14 +214,12 @@ const hh_helper = function () {
             period = parentContainer.lastElementChild.textContent;
         }
         let phones = item.querySelectorAll('div[data-qa="resume-contacts-phone"]');
-        console.log(phones);
         let phonesStr = '';
         if (phones.length) {
             phones.forEach((phone) => {
                 phonesStr += getPhoneNumbersFromString(phone.textContent).join(', ') + ', ';
             });
             phonesStr = phonesStr.slice(0, -2);
-            console.log(phonesStr);
         }
 
         let outputAddition = item.querySelector('div.output__addition[data-qa="resume-serp__resume-additional"]');
