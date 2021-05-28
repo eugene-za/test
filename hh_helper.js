@@ -1,3 +1,5 @@
+// ==UserScript== Обновление: 28 мая 2021 - исправлена выборка номеров телефона
+
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
 * 1. Генерация CSV с откликами на вакансии
@@ -7,10 +9,9 @@
 */
 
 const hh_helper = function () {
-
     // function for triggering mouse events
     function eventFire(elem, type, centerX, centerY) {
-        var evt = document.createEvent('MouseEvents')
+        var evt = document.createEvent('MouseEvents');
         evt.initMouseEvent(
             type,
             true,
@@ -27,7 +28,7 @@ const hh_helper = function () {
             false,
             0,
             elem
-        )
+        );
         elem.dispatchEvent(evt)
     }
 
@@ -71,7 +72,7 @@ const hh_helper = function () {
     // Синхронная функция задержки
     const delay = ms => {
         return new Promise(r => setTimeout(() => r(), ms))
-    }
+    };
 
     function addButton(index, html) {
         const buttonContainer = document.querySelector('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls');
@@ -195,6 +196,10 @@ const hh_helper = function () {
         return day + '/' + month + '/' + year + ' ' + datetime[1];
     }
 
+    function getPhoneNumbersFromString(str){
+        return str.match(/(\+{0,})(\d{0,})( [(]{1}\d{1,3}[)] {0,}){0,}(\s?\d+|\+\d{2,3}\s{1}\d+|\d+){1}[\s|-]?\d+([\s|-]?\d+){1,2}(\s){0,}/g);
+    }
+
     async function grabVacancyItem(item) {
         let age = item.querySelector('span[data-qa="resume-serp__resume-age"]').textContent;
         let fullname = item.querySelector('.resume-search-item__fullname').textContent.split(',')[0].replace(age, '');
@@ -208,13 +213,13 @@ const hh_helper = function () {
             lastCompany = (parentContainer.querySelector('.bloko-text-emphasis') || parentContainer.querySelector('span.resume-hidden-field_search')).textContent;
             period = parentContainer.lastElementChild.textContent;
         }
-        let phones = item.querySelectorAll('div[data-qa="resume-contacts-phone"] > span:first-child');
-        let phoneText = '';
+        let phones = item.querySelectorAll('div[data-qa="resume-contacts-phone"]');
+        let phonesStr = '';
         if (phones.length) {
             phones.forEach((phone) => {
-                phoneText += phone.textContent + ', '
+                phonesStr += getPhoneNumbersFromString(phone.textContent).join(', ') + ', ';
             });
-            phoneText = phoneText.slice(0, -2);
+            phonesStr = phonesStr.slice(0, -2);
         }
 
         let outputAddition = item.querySelector('div.output__addition[data-qa="resume-serp__resume-additional"]');
@@ -236,7 +241,7 @@ const hh_helper = function () {
             'last_position': lastPosition,
             'last_company': lastCompany,
             'period': period,
-            'phone': phoneText,
+            'phone': phonesStr,
             'updated_date': updatedDate,
             'responded_date': respondedDate,
             'last_activity': lastActivityDate,
