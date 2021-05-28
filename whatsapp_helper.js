@@ -1,4 +1,4 @@
-// ==UserScript== Обновление: 24 мая 2021 - 99%
+// ==UserScript== Обновление: 28 мая 2021 - ширина окна оповещений
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 24 мая 2021 - рабочая 99%');
+    console.warn('Обновление: 28 мая 2021 - ширина окна оповещений');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -866,7 +866,7 @@ const whatsapp_helper = function () {
         '.growl:hover{opacity:1;}' +
         '.growl.growl-incoming{opacity:0}' +
         '.growl.growl-outgoing{opacity:0}' +
-        '.growl.growl-large{width:330px;padding:0;margin:5px 0px 0 10px}' +
+        '.growl.growl-large{width:440px;padding:0;margin:5px 0px 0 10px}' +
         '.growl.growl-default{color:#fff;background:#535C69;box-shadow: 0 0 3px 1px rgba(255,255,255,.2);overflow:hidden}' +
         '.growl .growl-close{cursor:pointer;float:right;font-size:18px;line-height:17px;font-weight:bold;font-family:helvetica,verdana,sans-serif;width:19px;padding-top:1px;text-align:center;vertical-align:text-top;display:inline-block;color:#d8ff00;border-radius:50%;margin:2px 3px;background:#00000054; mix-blend-mode:overlay;border:.5px solid #00000008;}' +
         '.growl .growl-close:hover{mix-blend-mode:difference;}' +
