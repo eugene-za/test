@@ -197,7 +197,7 @@ const hh_helper = function () {
     }
 
     function getPhoneNumbersFromString(str){
-        return str.match(/(\+{0,})(\d{0,})( [(]{1}\d{1,3}[)] {0,}){0,}(\s?\d+|\+\d{2,3}\s{1}\d+|\d+){1}[\s|-]?\d+([\s|-]?\d+){1,2}(\s){0,}/g);
+        return str.match(/(\+{0,})(\d{0,})( [(]{1}\d{1,3}[)] {0,}){0,}(\s?\d+|\+\d{2,3}\s{1}\d+|\d+){1}[\s|-]?\d+([\s|-]?\d+){0,}/g);
     }
 
     async function grabVacancyItem(item) {
@@ -214,12 +214,14 @@ const hh_helper = function () {
             period = parentContainer.lastElementChild.textContent;
         }
         let phones = item.querySelectorAll('div[data-qa="resume-contacts-phone"]');
+        console.log(phones);
         let phonesStr = '';
         if (phones.length) {
             phones.forEach((phone) => {
                 phonesStr += getPhoneNumbersFromString(phone.textContent).join(', ') + ', ';
             });
             phonesStr = phonesStr.slice(0, -2);
+            console.log(phonesStr);
         }
 
         let outputAddition = item.querySelector('div.output__addition[data-qa="resume-serp__resume-additional"]');
