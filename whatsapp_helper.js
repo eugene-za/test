@@ -194,6 +194,8 @@ const whatsapp_helper = function () {
             addMassMessagingButton();
             //
             watchContactList();
+            //
+            appendStyle('.growl.growl-large{width:'+ ($('#side').width() - 16) +'px;}');
         }
     }, 200);
 
@@ -861,12 +863,12 @@ const whatsapp_helper = function () {
     * ----------------------------- Alerts
     */
 
-    appendStyle('#growls-br{z-index:16000;position:fixed;bottom:10px;left:6px}' +
+    appendStyle('#growls-br{z-index:16000;position:fixed;bottom:10px;left:0px}' +
         '.growl{opacity:1;position:relative;border-radius:4px;-webkit-transition:all .4s ease-in-out;-moz-transition:all .4s ease-in-out;transition:all .4s ease-in-out}' +
         '.growl:hover{opacity:1;}' +
         '.growl.growl-incoming{opacity:0}' +
         '.growl.growl-outgoing{opacity:0}' +
-        '.growl.growl-large{width:440px;padding:0;margin:5px 0px 0 10px}' +
+        '.growl.growl-large{min-width:330px;padding:0;margin:5px 0px 0 10px}' +
         '.growl.growl-default{color:#fff;background:#535C69;box-shadow: 0 0 3px 1px rgba(255,255,255,.2);overflow:hidden}' +
         '.growl .growl-close{cursor:pointer;float:right;font-size:18px;line-height:17px;font-weight:bold;font-family:helvetica,verdana,sans-serif;width:19px;padding-top:1px;text-align:center;vertical-align:text-top;display:inline-block;color:#d8ff00;border-radius:50%;margin:2px 3px;background:#00000054; mix-blend-mode:overlay;border:.5px solid #00000008;}' +
         '.growl .growl-close:hover{mix-blend-mode:difference;}' +
