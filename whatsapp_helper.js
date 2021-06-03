@@ -1,4 +1,4 @@
-// ==UserScript== Обновление: 28 мая 2021 - ширина окна оповещений
+// ==UserScript== Обновление: 03 июня 2021 - автоматическая вставка изображений при помощи расширения
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -15,7 +15,7 @@ const whatsapp_helper = function () {
     var version = '352';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 28 мая 2021 - ширина окна оповещений');
+    console.warn('Обновление: 03 июня 2021 - автоматическая вставка изображений при помощи расширения');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -387,6 +387,7 @@ const whatsapp_helper = function () {
 
     // Главная функция рассылки сообщений
     async function doMassMessaging() {
+        let doPaste = new Event("do_paste", {bubbles: true});
         const massMessagingButton = $('#massMessagingButton');
         massMessagingButton.addClass('blocked');
         let response = await fetch(massMessagingUrl);
@@ -408,7 +409,7 @@ const whatsapp_helper = function () {
             try {
                 // Открытие окна чата
                 let messageBox = await openChatByPhone(phoneNumber, messageText);
-
+                let buttonSend;
                 if (data.msg[key].hasOwnProperty('img')) {
                     let pngBlobs = [];
                     for (const url of data.msg[key]['img']) {
@@ -417,6 +418,7 @@ const whatsapp_helper = function () {
 
                     let count = data.msg[key]['img'].length;
                     let index = 0;
+                    let input;
                     for (const url of data.msg[key]['img']) {
                         // Вставка изображний
                         await navigator.clipboard.write([
@@ -425,15 +427,19 @@ const whatsapp_helper = function () {
                             })
                         ]);
                         await delay(100);
-                        await waitForElement('div._2_1wd.copyable-text.selectable-text[data-tab="6"]');
-                        //TODO: Нужно автоматизировать вставку изображений
-                        //new ClipboardEvent('paste');
+                        input = input || await waitForElement('div._2_1wd.copyable-text.selectable-text[data-tab="6"]');
+                        setTimeout(function () {
+                            document.dispatchEvent(doPaste);
+                        },200);
                         await waitForPaste(++index, count);
                     }
+                    buttonSend = await waitForElement('._3v5V7 span[data-icon="send"]');
+                } else {
+                    buttonSend = messageBox.querySelector('span[data-icon="send"]');
                 }
                 await delay(beforeSendMessageDelay);
                 // Отправка сообщения
-                eventFire(messageBox.querySelector('span[data-icon="send"]'), 'click');
+                eventFire(buttonSend, 'click');
                 // Отправка отчета о рассылке на Unirenter
                 fetch(massMessagingConfirmUrl + key + '&status=3');
                 // Включение механизма ожидания визуального отчета об отправке сообщения в чате
