@@ -182,6 +182,7 @@ const whatsapp_helper = function () {
     var waitForAppInterval = setInterval(function () {
         if ($('#app')[0]) {
             clearInterval(waitForAppInterval);
+
         }
     }, 200);
 
@@ -189,6 +190,11 @@ const whatsapp_helper = function () {
     var waitForSidebarInterval = setInterval(function () {
         if ($('#side')[0]) {
             clearInterval(waitForSidebarInterval);
+
+            // Проверка актуальности классов
+            if(!$('#side').hasClass('_1KDb8')){
+                console.error('ВНИМАНИЕ: НЕ НАЙДЕНЫ НЕОБХОДИМЫЕ КЛАССЫ! WhatsApp Helper может работать неправильно! Обратитесь в администратору - необходимо изменить Селекторы.');
+            }
 
             // Ширина notify
             appendStyle('.growl.growl-large{width:' + ($('#side').width() - 16) + 'px;}');
