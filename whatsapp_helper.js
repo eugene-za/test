@@ -1,4 +1,4 @@
-    // ==UserScript== Обновление: 09 июля 2021 - Массовая рассылка.
+    // ==UserScript== Обновление: 09 июля 2021 - Правка - Ширина оповещений
     
     /*
     * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -187,7 +187,10 @@
         var waitForSidebarInterval = setInterval(function () {
             if ($('#side')[0]) {
                 clearInterval(waitForSidebarInterval);
-    
+
+                //
+                appendStyle('.growl.growl-large{width:'+ ($('#side').width() - 16) +'px;}');
+
                 // добавление ссылки для whatsapp api
                 $('#app').append('<a href="" id="openChatAPI"></a>');
                 // добавление кнопок в левый сайдбар
@@ -195,8 +198,6 @@
                 addMassMessagingButton();
                 //
                 watchContactList();
-                //
-                appendStyle('.growl.growl-large{width:'+ ($('#side').width() - 16) +'px;}');
             }
         }, 200);
     
@@ -804,6 +805,7 @@
         function watchContactList(){
             function updateMsgCount(target) {
                 let contactNode = target.closest('div._2aBzC');
+                console.log(contactNode);
                 let contactPhoneOrNameFromGroup = contactNode.querySelector('span._1DB2K span._1adfa:not(._35k-1)');
                 let contactPhoneOrName = (contactPhoneOrNameFromGroup
                     ? contactPhoneOrNameFromGroup
