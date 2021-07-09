@@ -823,9 +823,9 @@ const whatsapp_helper = function () {
         // Селектор для Каждого Контакта из списка в бововой панели
         const contactNodeSelector = '._3m_Xw';
         // Селектор индикатора новых оповещений
-        const noticeIndicatorSelector = '._1pJ9J'; // contactNodeSelector . ' ' . 'div[role="gridcell"][aria-colindex="1"] > span > div'
+        const noticeIndicatorSelector = '._1pJ9J'; // contactNodeSelector + ' ' + 'div[role="gridcell"][aria-colindex="1"] > span > div'
         // Селектор внутреннего span индикатора новых оповещений
-        const noticeIndicatorSelectorSpan = '._23LrM'; // noticeIndicatorSelector . ' > ' . 'span[aria-label]'
+        const noticeIndicatorSelectorSpan = '._23LrM'; // noticeIndicatorSelector + ' > ' + 'span[aria-label]'
 
         const contactsUnreadCount = {};
 
