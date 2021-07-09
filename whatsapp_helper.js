@@ -141,7 +141,7 @@ const whatsapp_helper = function () {
     }
 
     // Селектор для Текстовой области
-    const textareaSelector = '._1UWac._1LbR4';
+    const textareaSelector = '._1UWac._1LbR4'; // Непосредственный родитель у 'div.copyable-text.selectable-text'
 
     // Функция открытия чата по номеру телефона. Возвращает Promise
     function openChatByPhone(phoneNumber, messageText) {
@@ -193,6 +193,11 @@ const whatsapp_helper = function () {
 
             // Проверка актуальности классов
             if(!$('#side').hasClass('_1KDb8')){
+                /**
+                 * Селекторы которые необходимо заменить и подсказки где их искать в DOM, можно найти в коде по запрсу "Селектор"
+                 * На данный момент их 4 штуки.
+                 * Также необходимо заменить имя класса в условии этого условного оператора.
+                 */
                 console.error('ВНИМАНИЕ: НЕ НАЙДЕНЫ НЕОБХОДИМЫЕ КЛАССЫ! WhatsApp Helper может работать неправильно! Обратитесь в администратору - необходимо изменить Селекторы.');
             }
 
@@ -424,10 +429,6 @@ const whatsapp_helper = function () {
                 let messageBox = await openChatByPhone(phoneNumber, messageText);
                 let buttonSend;
                 if (data.msg[key].hasOwnProperty('img')) {
-                    /*let pngBlobs = [];
-                    for (const url of data.msg[key]['img']) {
-                        pngBlobs.push(await getImgClipboardData(url));
-                    }*/
 
                     let count = data.msg[key]['img'].length;
                     let index = 0;
@@ -819,14 +820,12 @@ const whatsapp_helper = function () {
 
     function watchContactList() {
 
-        // The Контакт из списка в бововой панели
+        // Селектор для Каждого Контакта из списка в бововой панели
         const contactNodeSelector = '._3m_Xw';
         // Селектор индикатора новых оповещений
         const noticeIndicatorSelector = '._1pJ9J'; // contactNode . ' ' . 'div[role="gridcell"][aria-colindex="1"] > span > div'
         // Селектор внутреннего span индикатора новых оповещений
         const noticeIndicatorSelectorSpan = '._23LrM'; // noticeIndicatorSelector . ' > ' . 'span[aria-label]'
-        // Селектор имя или номер тефона контакта
-        const contactPhoneOrNameSelector = 'div[role="gridcell"][aria-colindex="2"] div:first-child'
 
         const contactsUnreadCount = {};
 
@@ -834,7 +833,7 @@ const whatsapp_helper = function () {
             let contactNode = noticeIndicator.closest(contactNodeSelector);
             //DEBUG_MODE && console.log('contactNode: ' , contactNode);
 
-            let contactPhoneOrName = contactNode.querySelector(contactPhoneOrNameSelector).textContent;
+            let contactPhoneOrName = contactNode.querySelector('div[role="gridcell"][aria-colindex="2"] div:first-child').textContent;
             //DEBUG_MODE && console.log('contactPhoneOrName: ' , contactPhoneOrName);
 
             let urlContactParams = isValidPhone(contactPhoneOrName)
