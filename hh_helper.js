@@ -1,9 +1,9 @@
-// ==UserScript== Обновление: 28 мая 2021 - исправлена выборка номеров телефона
+// ==UserScript== Обновление: 02 августа 2021 - Внесены правки в связи с изменением ориганальной верстки сайта
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
 * 1. Генерация CSV с откликами на вакансии
-* 2. Чекбокс - Выбрать все отклики
+* 2. Чекбокс - Выбрать все отклики - функция отклюена, т.к. дублирует оригинальный функционал
 *
 *
 */
@@ -74,15 +74,20 @@ const hh_helper = function () {
         return new Promise(r => setTimeout(() => r(), ms))
     };
 
+    const buttonContainer = document.querySelector('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls');
     function addButton(index, html) {
-        const buttonContainer = document.querySelector('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls');
-        let buttons = buttonContainer.querySelectorAll('.candidates-button');
-        const button = $('<span class="candidates-button">' + html + '</span>');
-        index = typeof index === 'undefined' || !buttons[index] ? buttons.length : index;
-        buttonContainer.insertBefore(button[0], buttons[index]);
-        return new Promise((resolve, reject) => {
-            resolve(button[0]);
-        });
+            return new Promise((resolve, reject) => {
+                if(buttonContainer) {
+                    let buttons = buttonContainer.querySelectorAll('.candidates-batch-controls');
+                    const button = $('<div class="candidates-batch-controls"><span class="candidates-button">' + html + '</span></div>');
+                    index = typeof index === 'undefined' || !buttons[index] ? buttons.length : index;
+                    buttonContainer.insertBefore(button[0], buttons[index]);
+                    resolve(button[0]);
+                } else {
+                    reject('buttonContainer не существует');
+                }
+            });
+
     }
 
     /**
@@ -97,12 +102,12 @@ const hh_helper = function () {
     const selectorButtonNextPage = 'a.bloko-button.HH-Pager-Control[data-qa="pager-next"]';
     const selectorButtonFirstPage = 'a.bloko-button.HH-Pager-Control[data-page="0"]';
 
-    const buttonGrabVacancies = addButton(2, '<button type="submit" name="reject" class="bloko-button" id="grabVacancies" >Скачать CSV</button>').then(button => {
+    addButton(2, '<button type="submit" name="reject" class="bloko-button" id="grabVacancies" >Скачать CSV</button>').then(button => {
         button.addEventListener('click', function (e) {
             e.preventDefault();
             actionGrabVacancies();
         })
-    });
+    }).catch(err => {/*console.log(err)*/});
 
     async function actionGrabVacancies() {
         let tempArrayVacancies = [];
@@ -217,6 +222,10 @@ const hh_helper = function () {
         let phonesStr = '';
         if (phones.length) {
             phones.forEach((phone) => {
+                let showPhoneNumberButton = phone.querySelector('button[data-qa="response-resume_show-phone-number"]')
+                if(showPhoneNumberButton){
+                    eventFire(showPhoneNumberButton, 'click');
+                }
                 phonesStr += getPhoneNumbersFromString(phone.textContent).join(', ') + ', ';
             });
             phonesStr = phonesStr.slice(0, -2);
@@ -250,10 +259,10 @@ const hh_helper = function () {
 
     /**
      * --------------------------------------------------------------------------------------------------------------
-     * 2. Чекбокс - Выбрать все отклики
+     * 2. Чекбокс - Выбрать все отклики - функция отклюена, т.к. дублирует оригинальный функционал
      * --------------------------------------------------------------------------------------------------------------
      */
-
+/*
     let buttonCheckboxSelectAll;
     addButton(0, '<input type="checkbox" title="Выбрать все">').then(button=>{
         buttonCheckboxSelectAll = button;
@@ -263,7 +272,7 @@ const hh_helper = function () {
         watchDomMutation(selectorWrapperVacancies, document.querySelector(selectorContainerVacancies), () => {
             actionSelectAllVacancies();
         });
-    });
+    }).catch(err => {/!*console.log(err)*!/});;
 
     function actionSelectAllVacancies() {
         const checkbox = buttonCheckboxSelectAll.querySelector('input[type=checkbox]');
@@ -274,5 +283,6 @@ const hh_helper = function () {
             }
         }
     }
+*/
 
 };
