@@ -1,14 +1,19 @@
-// ==UserScript== Обновление: 02 августа 2021 - Внесены правки в связи с изменением ориганальной верстки сайта
+// ==UserScript== Обновление: 03 августа 2021 - Внесены правки в связи с изменением ориганальной верстки сайта
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
 * 1. Генерация CSV с откликами на вакансии
-* 2. Чекбокс - Выбрать все отклики - функция отклюена, т.к. дублирует оригинальный функционал
+* 2. Чекбокс - Выбрать все отклики
 *
 *
 */
 
 const hh_helper = function () {
+
+    if(window.location.host === 'websocket.hh.ru'){
+        return;
+    }
+
     // function for triggering mouse events
     function eventFire(elem, type, centerX, centerY) {
         var evt = document.createEvent('MouseEvents');
@@ -62,6 +67,7 @@ const hh_helper = function () {
             let interval = setInterval(function () {
                 const element = parent.querySelector(selector);
                 if (element) {
+                    console.log('ready ' , element);
                     clearInterval(interval);
                     resolve(element);
                 }
@@ -74,19 +80,41 @@ const hh_helper = function () {
         return new Promise(r => setTimeout(() => r(), ms))
     };
 
-    const buttonContainer = document.querySelector('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls');
-    function addButton(index, html) {
-            return new Promise((resolve, reject) => {
-                if(buttonContainer) {
-                    let buttons = buttonContainer.querySelectorAll('.candidates-batch-controls');
-                    const button = $('<div class="candidates-batch-controls"><span class="candidates-button">' + html + '</span></div>');
-                    index = typeof index === 'undefined' || !buttons[index] ? buttons.length : index;
-                    buttonContainer.insertBefore(button[0], buttons[index]);
-                    resolve(button[0]);
-                } else {
-                    reject('buttonContainer не существует');
-                }
-            });
+    /**
+     * Добавление кнопок
+     */
+    let controlsType;
+    let buttonContainer = document.querySelector('.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls');
+
+    if (buttonContainer) {
+        controlsType = 'global';
+        //addCsvButton();
+    } else {
+        controlsType = 'filters';
+        waitForElement('[data-qa="lux-container lux-container-rendered"] > div',
+            document.querySelector('div.vacancy-responses-filters')).then(container => {
+                buttonContainer = container;
+                addCsvButton();
+                addSelectAllButton();
+            }
+        );
+    }
+
+    function addButton(html, index) {
+        return new Promise((resolve, reject) => {
+            if (buttonContainer) {
+                let wrappedHtml = controlsType === 'global'
+                    ? '<div class="candidates-batch-controls"><span class="candidates-button">' + html + '</span></div>'
+                    : '<span class="candidates-button">' + html + '</span>';
+                const button = $(wrappedHtml);
+                let buttons = buttonContainer.childNodes;
+                index = typeof index === 'undefined' || !buttons[index] ? buttons.length : index;
+                buttonContainer.insertBefore(button[0], buttons[index]);
+                resolve(button[0]);
+            } else {
+                reject('buttonContainer не существует');
+            }
+        });
 
     }
 
@@ -96,18 +124,22 @@ const hh_helper = function () {
      * --------------------------------------------------------------------------------------------------------------
      */
 
+    function addCsvButton() {
+        addButton('<button type="submit" name="reject" class="bloko-button" id="grabVacancies" >Скачать CSV</button>', 2).then(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                actionGrabVacancies();
+            })
+        }).catch(err => {/*console.log(err)*/
+        });
+    }
+
     const selectorContainerVacancies = 'div.HH-Employer-VacancyResponse-AjaxSubmit-ResultContainer';
     const selectorWrapperVacancies = 'div.HH-Employer-VacancyResponse-BatchActions-ItemsWrapper';
-    const selectorVacancyItem = selectorWrapperVacancies + ' div.resume-search-item';
+    const selectorVacancyItem = selectorWrapperVacancies + ' div.resume-search-item:not([data-counter-name=""])';
     const selectorButtonNextPage = 'a.bloko-button.HH-Pager-Control[data-qa="pager-next"]';
     const selectorButtonFirstPage = 'a.bloko-button.HH-Pager-Control[data-page="0"]';
 
-    addButton(2, '<button type="submit" name="reject" class="bloko-button" id="grabVacancies" >Скачать CSV</button>').then(button => {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-            actionGrabVacancies();
-        })
-    }).catch(err => {/*console.log(err)*/});
 
     async function actionGrabVacancies() {
         let tempArrayVacancies = [];
@@ -201,7 +233,7 @@ const hh_helper = function () {
         return day + '/' + month + '/' + year + ' ' + datetime[1];
     }
 
-    function getPhoneNumbersFromString(str){
+    function getPhoneNumbersFromString(str) {
         return str.match(/(\+)?(\(\d{2,3}\) ?\d|\d)(([ \-]?\d)|( ?\(\d{2,3}\) ?)){5,12}\d/g);
     }
 
@@ -223,7 +255,7 @@ const hh_helper = function () {
         if (phones.length) {
             phones.forEach((phone) => {
                 let showPhoneNumberButton = phone.querySelector('button[data-qa="response-resume_show-phone-number"]')
-                if(showPhoneNumberButton){
+                if (showPhoneNumberButton) {
                     eventFire(showPhoneNumberButton, 'click');
                 }
                 phonesStr += getPhoneNumbersFromString(phone.textContent).join(', ') + ', ';
@@ -262,27 +294,32 @@ const hh_helper = function () {
      * 2. Чекбокс - Выбрать все отклики - функция отклюена, т.к. дублирует оригинальный функционал
      * --------------------------------------------------------------------------------------------------------------
      */
-/*
+
     let buttonCheckboxSelectAll;
-    addButton(0, '<input type="checkbox" title="Выбрать все">').then(button=>{
-        buttonCheckboxSelectAll = button;
-        buttonCheckboxSelectAll.addEventListener('click', function (e) {
-            actionSelectAllVacancies();
+
+    function addSelectAllButton() {
+        addButton('<input type="checkbox" title="Выбрать все" style="margin-right:5px">', 0).then(button => {
+            buttonCheckboxSelectAll = button;
+            buttonCheckboxSelectAll.addEventListener('click', function (e) {
+                actionSelectAllVacancies();
+            });
+            watchDomMutation(selectorWrapperVacancies, document.querySelector(selectorContainerVacancies), () => {
+                actionSelectAllVacancies();
+            });
+        }).catch(err => {
+            /!*console.log(err)*!/
         });
-        watchDomMutation(selectorWrapperVacancies, document.querySelector(selectorContainerVacancies), () => {
-            actionSelectAllVacancies();
-        });
-    }).catch(err => {/!*console.log(err)*!/});;
+    }
 
     function actionSelectAllVacancies() {
         const checkbox = buttonCheckboxSelectAll.querySelector('input[type=checkbox]');
         let items = document.querySelectorAll(selectorContainerVacancies + ' ' + selectorVacancyItem);
         for (var item of items) {
-            if(checkbox.checked && !item.classList.contains('resume-search-item_checked') || !checkbox.checked && item.classList.contains('resume-search-item_checked')){
+            if (checkbox.checked && !item.classList.contains('resume-search-item_checked') || !checkbox.checked && item.classList.contains('resume-search-item_checked')) {
                 eventFire(item.querySelector('.bloko-checkbox'), 'click');
             }
         }
     }
-*/
+
 
 };
