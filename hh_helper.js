@@ -1,4 +1,4 @@
-// ==UserScript== Обновление: 08 августа 2021 - 3. Резюме Walker: - Скачать резюме - Пригласить по теме Оценка. Рефакторинг.
+// ==UserScript== Обновление: 09 августа 2021 - Исправление багов
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -542,7 +542,7 @@ const hh_helper = function () {
 
                     action = action || getUrlParameterValue('helper_action');
                     // Парсинг текущей страницы
-                    const applications = document.querySelectorAll(selectorApplicationItem);
+                    const applications = document.querySelectorAll(selectorContainerApplications + ' ' + selectorApplicationItem);
 
                     await processApplications(applications, action, 2000);
 
@@ -603,11 +603,12 @@ const hh_helper = function () {
             const childrenWindow = window.open(link.href + '&helper_action=download');
 
             window.resultCloseParent = (status) => {
+                clearTimeout(timeout);
                 childrenWindow.close();
                 resolve(status);
             }
 
-            setTimeout(() => {
+            var timeout = setTimeout(() => {
                 childrenWindow.close();
                 resolve('Неудача: Сброс по таймеру. Ссылка для скачки в ручном режиме: ' + link.href);
             }, 10000);
@@ -622,8 +623,9 @@ const hh_helper = function () {
             let showPhoneNumberButton = source.querySelector('[data-qa="response-resume_show-phone-number"]');
 
             if (showPhoneNumberButton) { // Номер телефона скрыт
-                await delay(400);
-                eventFire(showPhoneNumberButton, 'click');
+                setTimeout(() => {
+                    eventFire(showPhoneNumberButton, 'click');
+                }, 500);
                 source = await waitDomMutation('[data-qa="resume-serp_resume-item-content"]', source);
             }
 
@@ -646,7 +648,7 @@ const hh_helper = function () {
 
         async function downloadResume() {
             return new Promise(async (resolve, reject) => {
-                const personalNameElement = document.querySelector('[data-qa="resume-personal-name"]');
+                const personalNameElement = await waitForElement('[data-qa="resume-personal-name"]');
 
                 if (!personalNameElement) {
                     reject('Имя соискателя не найдено.');
@@ -655,7 +657,7 @@ const hh_helper = function () {
 
                 let personalName = personalNameElement.textContent;
 
-                const contactsBlock = document.querySelector('[data-qa="resume-block-contacts"]');
+                const contactsBlock = await waitForElement('[data-qa="resume-block-contacts"]');
                 const phoneNumber = await getResumePhoneNumber(contactsBlock);
 
                 if (!phoneNumber) {
@@ -698,10 +700,11 @@ const hh_helper = function () {
 
             window.resultCloseParent = (status) => {
                 childrenWindow.close();
+                clearTimeout(timeout);
                 resolve(status);
             }
 
-            setTimeout(() => {
+            var timeout = setTimeout(() => {
                 childrenWindow.close();
                 resolve('Неудача: Сброс по таймеру. Ссылка для приглашения в ручном режиме: ' + link.href);
             }, 10000);
@@ -709,14 +712,12 @@ const hh_helper = function () {
     }
 
 
-    /* Открыта страница резюме */
+    /* Открыта страница приглашения */
     if (getUrlPathSegments() === 'employer/negotiations/change_topic') {
 
         if(getUrlParameterValue('helper_action') === 'invite'){
             inviteOnAssessment().then(function (documentLink) {
-                setTimeout(function () {
-                    window.opener.resultCloseParent('Успешнно: ' + documentLink);
-                }, 1000);
+                window.opener.resultCloseParent('Успешнно: ' + documentLink);
             }).catch(function (error) {
                 window.opener.resultCloseParent('Неудача: ' + error);
             });
@@ -725,17 +726,20 @@ const hh_helper = function () {
         async function inviteOnAssessment() {
             return new Promise(async (resolve, reject) => {
                 const inviteStatesSelect = document.querySelector('[data-qa="negotiations-change-topic__states"]');
+                const inviteSubmitButton = document.querySelector('[data-qa="negotiations-change-topic__submit"]');
 
-                await delay(200);
+                await delay(500);
+
                 inviteStatesSelect.value = 'assessment';
                 eventFire(inviteStatesSelect, 'change');
-                eventFire(inviteStatesSelect.options[inviteStatesSelect.selectedIndex], 'click');
 
-                const inviteSubmitButton = document.querySelector('[data-qa="negotiations-change-topic__submit"]');
-                await delay(300);
-                eventFire(inviteSubmitButton, 'click');
+                setTimeout(() => {
+                    eventFire(inviteSubmitButton, 'click');
+                }, 500);
 
-                resolve('Приглашение отправлено');
+                window.addEventListener("unload", function() {
+                    resolve('Приглашение отправлено');
+                });
             });
         }
 
