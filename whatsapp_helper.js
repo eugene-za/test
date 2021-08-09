@@ -1,4 +1,4 @@
-// ==UserScript== Обновление: 09 июля 2021 - Проверка актуальности классов
+// ==UserScript== Обновление: 09 августа 2021 - Добавлена задержка для первого обращения к notifyService
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -618,7 +618,9 @@ const whatsapp_helper = function () {
             isShowAlerts('notify') && removeAlerts('notify');
             window.growls['notify'] = {};
             urlContactParams = urlContactParamsNew;
-            reloadAlerts(notifyUrl + urlContactParamsNew, 'notify');
+            setTimeout(() => {
+                reloadAlerts(notifyUrl + urlContactParamsNew, 'notify');
+            }, 300);
             notifyInterval = setInterval(function () {
                 getAlerts(notifyUrl + urlContactParamsNew, function (alerts) {
                     appendAlerts(alerts, 'notify');
