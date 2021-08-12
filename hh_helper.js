@@ -1,4 +1,4 @@
-// ==UserScript== Обновление: 09 августа 2021 - Исправление багов
+// ==UserScript== Обновление: 12 августа 2021 - Добавлена кнопка "Скачать CSV" на страницу "Все неразобранные"
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -325,7 +325,7 @@ const hh_helper = function () {
                     .addEventListener('click', function (e) {
                         e.preventDefault();
                         actionGrabVacancies();
-                    })
+                    });
 
                 // Добавление кнопки "Выбрать все"
                 addCollectionFilterButton('<input type="checkbox" title="Выбрать все" style="margin-right:5px">', 0)
@@ -335,6 +335,21 @@ const hh_helper = function () {
 
             }
         );
+
+    }
+
+    /* Открыта страница откликов */
+    if (getUrlPathSegments() === 'employer/vacancyresponses'
+        && 'response' === getUrlParameterValue('collection')) {
+
+        collectionFiltersContainer = document.querySelector('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls');
+
+        // Добавление кнопки "Скачать CSV"
+        addCollectionFilterButton('<button class="bloko-button">Скачать CSV</button>', 2)
+            .addEventListener('click', function (e) {
+                e.preventDefault();
+                actionGrabVacancies();
+            });
 
     }
 
@@ -496,11 +511,11 @@ const hh_helper = function () {
     /* Открыта страница поиска подходящих резюме */
     if (getUrlPathSegments() === 'search/resume') {
 
-        if(getUrlParameterValue('helper_action') === 'download'){
+        if (getUrlParameterValue('helper_action') === 'download') {
             applicationsPageWalker();
         }
 
-        if(getUrlParameterValue('helper_action') === 'invite'){
+        if (getUrlParameterValue('helper_action') === 'invite') {
             applicationsPageWalker();
         }
 
@@ -527,10 +542,10 @@ const hh_helper = function () {
          * @param action Текущее действие на странице
          * @returns {Promise<void>}
          */
-        async function applicationsPageWalker(action = ''){
+        async function applicationsPageWalker(action = '') {
             const currentPage = parseInt(getUrlParameterValue('page')) || 0;
 
-            if(action || getUrlParameterValue('helper_action')) {
+            if (action || getUrlParameterValue('helper_action')) {
 
                 if (action && currentPage !== 0) {
                     // Перехожу к первой странице
@@ -597,7 +612,7 @@ const hh_helper = function () {
      * --------------------------------------------------------------------------------------------------------------
      */
 
-    function download(application){
+    function download(application) {
         return new Promise(async (resolve, reject) => {
             const link = application.querySelector('[data-qa="resume-serp__resume-title"]');
             const childrenWindow = window.open(link.href + '&helper_action=download');
@@ -636,7 +651,7 @@ const hh_helper = function () {
                 : null;
         }
 
-        if(getUrlParameterValue('helper_action') === 'download'){
+        if (getUrlParameterValue('helper_action') === 'download') {
             downloadResume().then(function (documentLink) {
                 setTimeout(function () {
                     window.opener.resultCloseParent('Успешнно: ' + documentLink);
@@ -687,10 +702,10 @@ const hh_helper = function () {
      * --------------------------------------------------------------------------------------------------------------
      */
 
-    function invite(application){
+    function invite(application) {
         return new Promise(async (resolve, reject) => {
 
-            if(application.querySelector('[data-qa="topic-state"]')){
+            if (application.querySelector('[data-qa="topic-state"]')) {
                 resolve('Пропуск: уже прилашен.');
                 return;
             }
@@ -715,7 +730,7 @@ const hh_helper = function () {
     /* Открыта страница приглашения */
     if (getUrlPathSegments() === 'employer/negotiations/change_topic') {
 
-        if(getUrlParameterValue('helper_action') === 'invite'){
+        if (getUrlParameterValue('helper_action') === 'invite') {
             inviteOnAssessment().then(function (documentLink) {
                 window.opener.resultCloseParent('Успешнно: ' + documentLink);
             }).catch(function (error) {
@@ -737,7 +752,7 @@ const hh_helper = function () {
                     eventFire(inviteSubmitButton, 'click');
                 }, 500);
 
-                window.addEventListener("unload", function() {
+                window.addEventListener("unload", function () {
                     resolve('Приглашение отправлено');
                 });
             });
