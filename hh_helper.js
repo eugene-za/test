@@ -363,7 +363,6 @@ const hh_helper = function () {
     async function actionGrabVacancies() {
         let tempArrayVacancies = [];
         let containerVacancies = await waitForElement(selectorContainerVacancies);
-
         // Если не первая страница
         let buttonFirstPage = document.querySelector(selectorButtonFirstPage);
         if (buttonFirstPage) {
@@ -423,6 +422,7 @@ const hh_helper = function () {
     }
 
     function grubVacanciesPage(wrapper) {
+
         return new Promise(async resolve => {
             let items = wrapper.querySelectorAll(selectorVacancyItem);
             let result = [];
