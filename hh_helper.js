@@ -11,6 +11,8 @@
 
 const hh_helper = function () {
 
+    const resumeEachItemProcessTimeout = 2000;
+    const skipApplicationActionTimeout = 10000;
 
     const HREF = window.location.href;
 
@@ -37,7 +39,7 @@ const hh_helper = function () {
             type,
             true,
             true,
-            window,
+            unsafeWindow,
             1,
             1,
             1,
@@ -162,12 +164,18 @@ const hh_helper = function () {
 
     /**
      * Возвращает подстроку location.pathname
+     * @param url
      * @param limit Ограничивает количество сегментов
      * @param start Начало выборки сегментов
      * @returns {string}
      */
-    function getUrlPathSegments(limit = 0, start = 0) {
-        const sectionsArray = location.pathname.replace(/^\/|\/$/g, '').split('/');
+    function getUrlPathSegments(url = '', limit = 0, start = 0) {
+
+        let pathname = url
+            ? new URL(url).pathname
+            : location.pathname;
+
+        const sectionsArray = pathname.replace(/^\/|\/$/g, '').split('/');
 
         let sectionsResult = [];
         for (let i = 0, count = 0; sectionsArray.length > i; i++, count++) {
@@ -255,7 +263,7 @@ const hh_helper = function () {
      * @returns Element Возвращает добавленную кнопку
      */
     function addCollectionFilterButton(html, index) {
-        wrapper = document.createElement('span');
+        const wrapper = document.createElement('span');
         wrapper.setAttribute('class', 'candidates-button');
         wrapper.innerHTML = html;
         insertElement(wrapper, collectionFiltersContainer, index);
@@ -271,7 +279,7 @@ const hh_helper = function () {
      * @returns Element Возвращает добавленную кнопку
      */
     function addResumeFilterButton(html, index) {
-        wrapper = document.createElement('div');
+        const wrapper = document.createElement('div');
         wrapper.setAttribute('class', 'candidates-reject-controls');
         wrapper.innerHTML = html;
         insertElement(wrapper, applicationsFiltersContainer, index);
@@ -313,7 +321,6 @@ const hh_helper = function () {
         'discard_by_employer'
     ].includes(getUrlParameterValue('collection'))) {
 
-
         /* Добавление кнопок "Выбрать все" и "Скачать CSV" */
         waitForElement('[data-qa="lux-container lux-container-rendered"] > div',
             document.querySelector('div.vacancy-responses-filters')).then(container => {
@@ -338,7 +345,7 @@ const hh_helper = function () {
 
     }
 
-    /* Открыта страница откликов */
+    /* Открыта страница "Все неразобранные" отклики */
     if (getUrlPathSegments() === 'employer/vacancyresponses'
         && 'response' === getUrlParameterValue('collection')) {
 
@@ -512,29 +519,36 @@ const hh_helper = function () {
     if (getUrlPathSegments() === 'search/resume') {
 
         if (getUrlParameterValue('helper_action') === 'download') {
+            // Если идет процесс скачки файлов
+
             applicationsPageWalker();
-        }
+        } else if (getUrlParameterValue('helper_action') === 'invite') {
+            // Если идет процесс рассылки приглашений
 
-        if (getUrlParameterValue('helper_action') === 'invite') {
             applicationsPageWalker();
+        } else {
+            // Если страница открыта обычным способом
+
+            /* Добавление кнопок "Скачать резюме" и "Пригласить" */
+            waitDomMutation('div', document.querySelector('#HH-React-Root .bloko-form-item', 'attributes'))
+                .then(() => {
+                    applicationsFiltersContainer = document.querySelector('#HH-React-Root .resume-serp-filters');
+
+                    addResumeFilterButton('<button class="bloko-button">Скачать резюме</button>', 4)
+                        .addEventListener('click', function (e) {
+
+                            if (GM.getValue || confirm("Внимание! Локальное хранилище не включено. Продолжить работу?")) {
+                                // Если включено локальное хранилище или проигнорировано пользователем
+                                applicationsPageWalker('download');
+                            }
+                        });
+
+                    addResumeFilterButton('<button class="bloko-button">Пригласить</button>', 5)
+                        .addEventListener('click', function (e) {
+                            applicationsPageWalker('invite');
+                        });
+                });
         }
-
-
-        /* Добавление кнопок "Скачать резюме" и "Пригласить" */
-        waitDomMutation('div', document.querySelector('#HH-React-Root .bloko-form-item', 'attributes'))
-            .then(() => {
-                applicationsFiltersContainer = document.querySelector('#HH-React-Root .resume-serp-filters');
-
-                addResumeFilterButton('<button class="bloko-button">Скачать резюме</button>', 4)
-                    .addEventListener('click', function (e) {
-                        applicationsPageWalker('download');
-                    });
-
-                addResumeFilterButton('<button class="bloko-button">Пригласить</button>', 5)
-                    .addEventListener('click', function (e) {
-                        applicationsPageWalker('invite');
-                    });
-            });
 
 
         /**
@@ -548,22 +562,25 @@ const hh_helper = function () {
             if (action || getUrlParameterValue('helper_action')) {
 
                 if (action && currentPage !== 0) {
-                    // Перехожу к первой странице
+                    // Если не первая страница и процесс парсинга еще не начат - перехожу к первой странице
+
                     const buttonFirstPage = document.querySelector(selectorApplicationsNavButtonFirstPage) || document.querySelector(selectorApplicationsNavButtonPageOne);
                     location.href = buttonFirstPage.href + '&helper_action=' + action;
+
                 } else {
                     // Начинаю или родолжаю парсить
+
                     await delay(1000);
 
                     action = action || getUrlParameterValue('helper_action');
                     // Парсинг текущей страницы
                     const applications = document.querySelectorAll(selectorContainerApplications + ' ' + selectorApplicationItem);
 
-                    await processApplications(applications, action, 2000);
+                    await processApplications(applications, action, resumeEachItemProcessTimeout);
 
                     const buttonNextPage = document.querySelector(selectorApplicationsNavButtonNextPage);
-
-                    if (buttonNextPage) { // Если есть следующая страница
+                    if (buttonNextPage) {
+                        // Если есть следующая страница - перехожу на нее
 
                         if (!getUrlParameterValue('helper_action')) {
                             location.href = buttonNextPage.href + '&helper_action=' + action;
@@ -572,12 +589,16 @@ const hh_helper = function () {
                         }
 
                     } else {
+                        // Завершаю работу
+
                         history.pushState({}, null, location.href.replace('&helper_action=' + action, ''));
                         document.querySelectorAll(selectorApplicationsNavButtons).forEach(function (button) {
                             button.href = button.href.replace('&helper_action=' + action, '')
                         });
                         console.warn('ГОТОВО. Обработано: ' + (currentPage + 1) + ' страниц');
+
                     }
+
                 }
             }
         }
@@ -592,19 +613,88 @@ const hh_helper = function () {
          */
         async function processApplications(applications, action, timeout) {
             for (const item of applications) {
-                switch (action) {
-                    case "download":
-                        console.log(await download(item));
-                        break;
-                    case "invite":
-                        console.log(await invite(item));
-                        break;
+
+                const application_url = item.querySelector('[data-qa="resume-serp__resume-title"]').href;
+                const application_hash = getUrlPathSegments(application_url, 0, 1);
+
+                try {
+                    let result;
+                    switch (action) {
+
+                        case "download":
+
+                            if (GM.getValue && await GM.getValue(application_hash)) {
+                                // Если ID резюме сохранен в хранилищи - значит был скачан прежде
+                                continue;
+                            } else if (!GM.getValue) {
+
+                            }
+
+                            result = await processChildWindowAction(action, application_url);
+                            // Сохранение информации о скачаном файле резюме в хранилице tampermonkey
+                            GM.getValue && await GM.setValue(application_hash, '1');
+                            break;
+
+                        case "invite":
+                            if (item.querySelector('[data-qa="topic-state"]')) {
+                                // Приглашение уже отправлнео
+                                continue;
+                            }
+
+                            result = await processChildWindowAction(action,
+                                item.querySelector('[data-qa="employee-invite-on-topic"]').href);
+                            break;
+
+                    }
+                    if (result) {
+                        console.log('Успешнно: "' + result.message + '". ID резюме: ' + application_hash);
+                    }
+                } catch (result) {
+                    console.error('Неудача: "' + result.message + '". ID резюме: ' + application_hash)
                 }
+
                 await delay(timeout);
             }
         }
-    }
 
+
+        /**
+         * Открывает соответсвующую действию дочернию страницу, и посылает ей запрос на действие
+         * @param action Действие
+         * @param url Адрес страницы
+         * @returns {Promise}
+         */
+        function processChildWindowAction(action, url) {
+
+            return new Promise(async (resolve, reject) => {
+
+                const childWindow = window.open(url + '&helper_action=' + action);
+
+                unsafeWindow.actionCloseChild = (result) => {
+
+                    clearTimeout(window.actionTimeout);
+                    childWindow.close();
+
+                    if (result.status === 'ok') {
+                        resolve(result);
+                    } else {
+                        reject(result);
+                    }
+
+                }
+
+                window.actionTimeout = setTimeout(() => {
+
+                    childWindow.close();
+                    reject({
+                        status: 'error',
+                        message: 'Сброс по таймеру. Ссылка на резюме: ' + url
+                    });
+                }, skipApplicationActionTimeout);
+
+            })
+        }
+    }
 
     /**
      * --------------------------------------------------------------------------------------------------------------
@@ -612,29 +702,86 @@ const hh_helper = function () {
      * --------------------------------------------------------------------------------------------------------------
      */
 
-    function download(application) {
-        return new Promise(async (resolve, reject) => {
-            const link = application.querySelector('[data-qa="resume-serp__resume-title"]');
-            const childrenWindow = window.open(link.href + '&helper_action=download');
-
-            window.resultCloseParent = (status) => {
-                clearTimeout(timeout);
-                childrenWindow.close();
-                resolve(status);
-            }
-
-            var timeout = setTimeout(() => {
-                childrenWindow.close();
-                resolve('Неудача: Сброс по таймеру. Ссылка для скачки в ручном режиме: ' + link.href);
-            }, 10000);
-        })
-    }
-
 
     /* Открыта страница резюме */
-    if (getUrlPathSegments(1) === 'resume') {
+
+    if (getUrlPathSegments(null, 1) === 'resume') {
+
+        const action = getUrlParameterValue('helper_action');
+
+        if (action === 'download') {
+
+            downloadResume().then(function (result) {
+                // Если успешно
+
+                // Запрос к родительскому окну на закрытие окна резюме через 1 секунду
+                setTimeout(function () {
+                    window.opener.actionCloseChild(result);
+                }, 1000);
+            }).catch(function (result) {
+                // Если неудача
+
+                // Запрос к родительскому окну на закрытие окна резюме
+                window.opener.actionCloseChild(result);
+            });
+
+        }
+
+        async function downloadResume() {
+            return new Promise(async (resolve, reject) => {
+
+                // Получение ID резюме
+                const resume_hash = getUrlPathSegments(null, 0, 1);
+
+                // Получение имени
+                const personalNameElement = await waitForElement('[data-qa="resume-personal-name"]');
+                if (!personalNameElement) {
+                    reject({
+                        status: 'error',
+                        message: 'Имя соискателя не найдено или скрыто.',
+                        id: resume_hash
+                    });
+                    return;
+                }
+                let personalName = personalNameElement.textContent;
+
+                // Получение номера телефона
+                const contactsBlock = await waitForElement('[data-qa="resume-block-contacts"]');
+                let phoneNumber = await getResumePhoneNumber(contactsBlock);
+
+                // Если номер телефона скрыт
+                if (!phoneNumber) {
+                    reject({
+                        status: 'error',
+                        message: 'Номер телефона не найден или скрыт.',
+                        id: resume_hash
+                    });
+                    return;
+                }
+
+                // Форматирование номера телефона
+                phoneNumber = phoneNumber.replace('+', '');
+                // Формирование имени файла документа резюме
+                const fileName = phoneNumber + ' ' + personalName + '.doc';
+                // Формирование ссылки на файл документа резюме и последующий переход по ней
+                location.href = window.location.protocol + '//' + window.location.hostname +
+                    '/resume_converter/' +
+                    encodeURI(fileName) +
+                    '?hash=' + resume_hash +
+                    '&simhash=' + getUrlParameterValue('simhash') +
+                    '&vacancyId=' + getUrlParameterValue('vacancyId') +
+                    '&type=rtf&hhtmSource=resume&hhtmFrom=resume_search_result';
+
+                resolve({
+                    status: 'ok',
+                    message: 'Документ "' + fileName + '" скачан.',
+                    hash: resume_hash
+                });
+            });
+        }
 
         async function getResumePhoneNumber(source) {
+
             let showPhoneNumberButton = source.querySelector('[data-qa="response-resume_show-phone-number"]');
 
             if (showPhoneNumberButton) { // Номер телефона скрыт
@@ -650,51 +797,6 @@ const hh_helper = function () {
                 ? clearPhoneNumber(numbers[0])
                 : null;
         }
-
-        if (getUrlParameterValue('helper_action') === 'download') {
-            downloadResume().then(function (documentLink) {
-                setTimeout(function () {
-                    window.opener.resultCloseParent('Успешнно: ' + documentLink);
-                }, 1000);
-            }).catch(function (error) {
-                window.opener.resultCloseParent('Неудача: ' + error);
-            });
-        }
-
-        async function downloadResume() {
-            return new Promise(async (resolve, reject) => {
-                const personalNameElement = await waitForElement('[data-qa="resume-personal-name"]');
-
-                if (!personalNameElement) {
-                    reject('Имя соискателя не найдено.');
-                    return;
-                }
-
-                let personalName = personalNameElement.textContent;
-
-                const contactsBlock = await waitForElement('[data-qa="resume-block-contacts"]');
-                let phoneNumber = await getResumePhoneNumber(contactsBlock);
-
-                if (!phoneNumber) {
-                    reject('Номер телефона не найден.');
-                    return;
-                }
-
-                phoneNumber = phoneNumber.replace('+', '');
-
-                const fileName = phoneNumber + ' ' + personalName + '.doc';
-
-                location.href = window.location.protocol + '//' + window.location.hostname +
-                    '/resume_converter/' +
-                    encodeURI(fileName) +
-                    '?hash=' + getUrlPathSegments(0, 1) +
-                    '&simhash=' + getUrlParameterValue('simhash') +
-                    '&vacancyId=' + getUrlParameterValue('vacancyId') +
-                    '&type=rtf&hhtmSource=resume&hhtmFrom=resume_search_result';
-
-                resolve('Документ "' + fileName + '" скачан.');
-            });
-        }
     }
 
 
@@ -704,39 +806,25 @@ const hh_helper = function () {
      * --------------------------------------------------------------------------------------------------------------
      */
 
-    function invite(application) {
-        return new Promise(async (resolve, reject) => {
-
-            if (application.querySelector('[data-qa="topic-state"]')) {
-                resolve('Пропуск: уже прилашен.');
-                return;
-            }
-
-            const link = application.querySelector('[data-qa="employee-invite-on-topic"]');
-            const childrenWindow = window.open(link.href + '&helper_action=invite');
-
-            window.resultCloseParent = (status) => {
-                childrenWindow.close();
-                clearTimeout(timeout);
-                resolve(status);
-            }
-
-            var timeout = setTimeout(() => {
-                childrenWindow.close();
-                resolve('Неудача: Сброс по таймеру. Ссылка для приглашения в ручном режиме: ' + link.href);
-            }, 10000);
-        })
-    }
-
 
     /* Открыта страница приглашения */
+
     if (getUrlPathSegments() === 'employer/negotiations/change_topic') {
 
-        if (getUrlParameterValue('helper_action') === 'invite') {
-            inviteOnAssessment().then(function (documentLink) {
-                window.opener.resultCloseParent('Успешнно: ' + documentLink);
-            }).catch(function (error) {
-                window.opener.resultCloseParent('Неудача: ' + error);
+        const action = getUrlParameterValue('helper_action');
+
+        if (action === 'invite') {
+
+            inviteOnAssessment().then(function (result) {
+                // Если успешно
+
+                // Запрос к родительскому окну на закрытие окна
+                window.opener.actionCloseChild(result);
+            }).catch(function (result) {
+                // Если неудача
+
+                // Запрос к родительскому окну на закрытие окна резюме
+                window.opener.actionCloseChild(result);
             });
         }
 
@@ -755,7 +843,12 @@ const hh_helper = function () {
                 }, 500);
 
                 window.addEventListener("unload", function () {
-                    resolve('Приглашение отправлено');
+                    resolve(
+                        {
+                            status: 'ok',
+                            message: 'Приглашение отправлено'
+                        }
+                    );
                 });
             });
         }
