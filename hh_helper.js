@@ -673,12 +673,14 @@ const hh_helper = function () {
                 let personalName = personalNameElement.textContent;
 
                 const contactsBlock = await waitForElement('[data-qa="resume-block-contacts"]');
-                const phoneNumber = await getResumePhoneNumber(contactsBlock);
+                let phoneNumber = await getResumePhoneNumber(contactsBlock);
 
                 if (!phoneNumber) {
                     reject('Номер телефона не найден.');
                     return;
                 }
+
+                phoneNumber = phoneNumber.replace('+', '');
 
                 const fileName = phoneNumber + ' ' + personalName + '.doc';
 
