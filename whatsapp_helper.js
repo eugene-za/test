@@ -834,10 +834,10 @@ const whatsapp_helper = function () {
 
         function updateMsgCount(noticeIndicator) {
             let contactNode = noticeIndicator.closest(contactNodeSelector);
-            DEBUG_MODE && console.log('contactNode: ' , contactNode);
+            DEBUG_MODE && console.log('DEBUG_MODE: contactNode: ' , contactNode);
 
             let contactPhoneOrName = contactNode.querySelector('div[role="gridcell"][aria-colindex="2"] div:first-child').textContent;
-            DEBUG_MODE && console.log('Номер телефона или имя контакта: ' , contactPhoneOrName);
+            DEBUG_MODE && console.log('DEBUG_MODE: Номер телефона или имя контакта: ' , contactPhoneOrName);
 
             let urlContactParams = isValidPhone(contactPhoneOrName)
                 ? ('&phone=' + contactPhoneOrName.replace(/[\D]/gi, ''))
@@ -866,9 +866,9 @@ const whatsapp_helper = function () {
                 switch (mutation.type) {
                     case 'childList':
                         let indicator = mutation.target.querySelector(noticeIndicatorSelectorSpan)
-                        DEBUG_MODE && console.log('indicatorNode: ' , noticeIndicatorSelectorSpan);
+                        DEBUG_MODE && console.log('DEBUG_MODE indicatorNode: ' , indicator);
                         if (indicator) {
-                            DEBUG_MODE && console.log('Появление индикатора', indicator)
+                            DEBUG_MODE && console.log('DEBUG_MODE: Появление индикатора', indicator)
                             updateMsgCount(indicator);
                         } else if (mutation.removedNodes.length) {
                             Array.from(mutation.removedNodes).forEach((node) => {
@@ -876,7 +876,7 @@ const whatsapp_helper = function () {
                                     return;
                                 }
                                 if (node.matches(noticeIndicatorSelector)) {
-                                    DEBUG_MODE && console.log('Прочитано', mutation.target)
+                                    DEBUG_MODE && console.log('DEBUG_MODE: Прочитано', mutation.target)
                                     updateMsgCount(mutation.target);
                                 }
                             });
@@ -884,7 +884,7 @@ const whatsapp_helper = function () {
                         break;
                     case 'characterData':
                         if (mutation.target.parentNode.matches(noticeIndicatorSelectorSpan)) {
-                            DEBUG_MODE && console.log('Изменение количества оповещений', mutation.target.parentNode)
+                            DEBUG_MODE && console.log('DEBUG_MODE: Изменение количества оповещений', mutation.target.parentNode)
                             updateMsgCount(mutation.target.parentNode);
                         }
                         break;
