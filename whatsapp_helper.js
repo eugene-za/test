@@ -834,7 +834,7 @@ const whatsapp_helper = function () {
 
         function updateMsgCount(noticeIndicator) {
             let contactNode = noticeIndicator.closest(contactNodeSelector);
-            //DEBUG_MODE && console.log('contactNode: ' , contactNode);
+            DEBUG_MODE && console.log('contactNode: ' , contactNode);
 
             let contactPhoneOrName = contactNode.querySelector('div[role="gridcell"][aria-colindex="2"] div:first-child').textContent;
             DEBUG_MODE && console.log('Номер телефона или имя контакта: ' , contactPhoneOrName);
@@ -866,6 +866,7 @@ const whatsapp_helper = function () {
                 switch (mutation.type) {
                     case 'childList':
                         let indicator = mutation.target.querySelector(noticeIndicatorSelectorSpan)
+                        DEBUG_MODE && console.log('indicatorNode: ' , noticeIndicatorSelectorSpan);
                         if (indicator) {
                             DEBUG_MODE && console.log('Появление индикатора', indicator)
                             updateMsgCount(indicator);
