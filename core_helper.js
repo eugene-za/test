@@ -251,3 +251,14 @@ function insertHtml(html, parent, index) {
 
     return element;
 }
+
+
+/**
+ * Добавление CSS стилей
+ * @param cssRules
+ */
+function appendStyle(cssRules) {
+    var css = document.createElement('style');
+    css.appendChild(document.createTextNode(cssRules));
+    document.head.appendChild(css);
+}
