@@ -52,6 +52,7 @@ function watchDomMutation(selector, target, callback, disposable = false) {
                 if (!(node instanceof Element)) {
                     return;
                 }
+                CORE_DEBUG_MODE && console.log('CORE_DEBUG_MODE', 'Mutation of', node, 'in', target);
                 if (node.matches(selector)) {
                     callback(node);
                     disposable && observer.disconnect();
@@ -82,7 +83,7 @@ function waitDomMutation(selector, target, type = null) {
                     continue;
                 }
                 if (mutation.type === 'childList') {
-                    if (mutation.type !== 'childList' || !mutation.addedNodes.length) {
+                    if (!mutation.addedNodes.length) {
                         continue;
                     }
                     Array.from(mutation.addedNodes).forEach(function (node) {
@@ -117,14 +118,25 @@ function waitDomMutation(selector, target, type = null) {
  * Ожидает появление элемента в DOM
  * @param {string} selector Селектор ожидаемого элемента
  * @param {Node} parent Родительский элемент
+ * @param {int} timeout Максимальное время ожидания в ms
  * @returns Promise<Element>
  */
-function waitForElement(selector, parent = document) {
-    return new Promise(function (resolve) {
+function waitForElement(selector, parent = document, timeout = 0) {
+    return new Promise(function (resolve, reject) {
+        if (timeout) {
+            timeout = setTimeout(function () {
+                clearInterval(interval);
+                let err_msg = 'Ожидание элемента ' + selector + ' прервано тайм-аутом';
+                CORE_DEBUG_MODE && console.log('CORE_DEBUG_MODE', err_msg);
+                reject(err_msg);
+            }, timeout);
+        }
         let interval = setInterval(function () {
             const element = parent.querySelector(selector);
+            CORE_DEBUG_MODE && console.log('CORE_DEBUG_MODE', 'Ожидается:', selector, 'Найдено:', element);
             if (element) {
                 clearInterval(interval);
+                timeout && clearTimeout(timeout);
                 resolve(element);
             }
         }, 50);
@@ -158,10 +170,11 @@ function getUrlPathSegments(url = '', limit = 0, start = 0) {
     const sectionsArray = pathname.replace(/^\/|\/$/g, '').split('/');
 
     let sectionsResult = [];
-    for (let i = 0, count = 0; sectionsArray.length > i; i++, count++) {
+    for (let i = 0, count = 1; sectionsArray.length > i; i++) {
         if (start > i) continue;
-        if (limit && count === limit) break;
         sectionsResult.push(sectionsArray[i]);
+        if (limit && count === limit) break;
+        count++;
     }
 
     return sectionsResult.join('/');
@@ -209,7 +222,7 @@ function formatDateString(str) {
  * @returns Array Возвращает массив с номерами телефонов
  */
 function getPhoneNumbersFromString(str) {
-    return str.match(/(\+)?(\(\d{2,3}\) ?\d|\d)(([ \-]?\d)|( ?\(\d{2,3}\) ?)){5,12}\d/g);
+    return str.match(/(\+)?(\(\d{2,3}\) ?\d|\d)(([ \-]?\d)|( ?\(\d{2,3}\) ?)){5,12}\d/g) || [];
 }
 
 
@@ -261,4 +274,42 @@ function appendStyle(cssRules) {
     var css = document.createElement('style');
     css.appendChild(document.createTextNode(cssRules));
     document.head.appendChild(css);
+}
+
+
+/**
+ * Открывает соответсвующую действию дочернию страницу, и посылает ей запрос на действие
+ * @param url Адрес страницы
+ * @param action Действие
+ * @param timeout Максимальное время ожидание результата действия
+ * @returns {Promise}
+ */
+function promiseChildWindowAction(url, action, timeout) {
+
+    return new Promise(async (resolve, reject) => {
+        url = new URL(url);
+        url.searchParams.set('helper_action', action);
+        const childWindow = window.open(url);
+
+        window.actionCloseChild = (result) => {
+            clearTimeout(window.actionTimeout);
+            childWindow.close();
+            if (result.status === 'ok') {
+                resolve(result);
+            } else {
+                reject(result);
+            }
+        }
+
+        window.actionTimeout = setTimeout(() => {
+            childWindow.close();
+            reject({
+                status: 'error',
+                message: 'Сброс по таймеру.',
+                url: url,
+                action: action
+            });
+        }, timeout || 10000);
+
+    });
 }
