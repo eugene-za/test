@@ -1,4 +1,4 @@
-// ==UserScript== Обновление: 14 августа 2021 - Дебаг Уведомления о получении новых сообщений
+// ==UserScript== Обновление: 1 сентября 2021 - Изменение верстки
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -12,10 +12,10 @@
 
 const whatsapp_helper = function () {
 
-    var version = '352';
+    var version = '353';
 
     console.warn('WhatsApp Helper версия: ' + version);
-    console.warn('Обновление: 14 августа 2021 - Дебаг Уведомления о получении новых сообщений');
+    console.warn('Обновление: 1 сентября 2021 - Изменение верстки');
 
     // ---*** МАССОВАЯ РАССЫЛКА СООБЩЕНИЙ :
 
@@ -105,7 +105,7 @@ const whatsapp_helper = function () {
         return new Promise(function (resolve) {
             let interval = setInterval(function () {
                 const element = parent.querySelector(selector);
-                console.log(element);
+                DEBUG_MODE && console.log('CORE_DEBUG_MODE', 'Ожидается:', selector, 'Найдено:', element);
                 if (element) {
                     clearInterval(interval);
                     resolve(element);
@@ -157,9 +157,11 @@ const whatsapp_helper = function () {
                         observer.disconnect();
                         reject('Неверный номер телефона - ' + phoneNumber);
                     }
+                    DEBUG_MODE && console.log('DEBUG_MODE', 'Ожидается:', textareaSelector, 'Найдено:', mutation.target);
                     if (mutation.target.matches(textareaSelector) && mutation.target.textContent.includes(phoneNumber)/*&& mutation.target.textContent*/) {
                         observer.disconnect();
-                        let textarea = mutation.target.querySelector('.copyable-text[data-tab="6"]');
+                        let textarea = mutation.target.querySelector('.copyable-text[role="textbox"]');
+                        DEBUG_MODE && console.log('DEBUG_MODE', 'textarea', textarea, 'messageText:', messageText);
                         textarea.innerHTML = messageText || '';
                         eventFire(textarea, 'input');
                         resolve(mutation.target.closest('div.copyable-area'));
