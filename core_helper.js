@@ -118,28 +118,29 @@ function waitDomMutation(selector, target, type = null) {
  * Ожидает появление элемента в DOM
  * @param {string} selector Селектор ожидаемого элемента
  * @param {Node} parent Родительский элемент
- * @param {int} timeout Максимальное время ожидания в ms
+ * @param {int} timeout_ms Максимальное время ожидания в ms
+ * @param {int} interval_ms Интервал между попытками найти элемент
  * @returns Promise<Element>
  */
-function waitForElement(selector, parent = document, timeout = 0) {
+function waitForElement(selector, parent = document, timeout_ms = 0, interval_ms = 50) {
     return new Promise(function (resolve, reject) {
-        if (timeout) {
+        if (timeout_ms) {
             timeout = setTimeout(function () {
                 clearInterval(interval);
                 let err_msg = 'Ожидание элемента ' + selector + ' прервано тайм-аутом';
                 CORE_DEBUG_MODE && console.log('CORE_DEBUG_MODE', err_msg);
                 reject(err_msg);
-            }, timeout);
+            }, timeout_ms);
         }
         let interval = setInterval(function () {
             const element = parent.querySelector(selector);
             CORE_DEBUG_MODE && console.log('CORE_DEBUG_MODE', 'Ожидается:', selector, 'Найдено:', element);
             if (element) {
                 clearInterval(interval);
-                timeout && clearTimeout(timeout);
+                timeout_ms && clearTimeout(timeout);
                 resolve(element);
             }
-        }, timeout || 50);
+        }, interval_ms || 50);
     });
 }
 
