@@ -139,7 +139,7 @@ function waitForElement(selector, parent = document, timeout = 0) {
                 timeout && clearTimeout(timeout);
                 resolve(element);
             }
-        }, 50);
+        }, timeout || 50);
     });
 }
 
@@ -225,6 +225,18 @@ function getPhoneNumbersFromString(str) {
     return str.match(/(\+)?(\(\d{2,3}\) ?\d|\d)(([ \-]?\d)|( ?\(\d{2,3}\) ?)){5,12}\d/g) || [];
 }
 
+/**
+ * Возвращает найденные в строке номера телефонов
+ * @param {string} str Строка для поиска номеров
+ * @returns Array Возвращает массив с номерами телефонов
+ */
+function getDirtyPhoneNumbersFromString(str) {
+    const matches = str.match(/((8|7|\+7)\D*)?([3489]\D*?\d\D*?\d\D*?)(\d\D*?\d\D*?\d\D*?\d\D*?\d\D*?\d\D*?\d)/g) || [];
+    return matches.map(function (phone) {
+        return phone.replace(/[^+\d]+/g, "");
+    });
+}
+
 
 /**
  * Удаляет все символы из строки, кроме + и цифр
@@ -284,16 +296,18 @@ function appendStyle(cssRules) {
  * @param timeout Максимальное время ожидание результата действия
  * @returns {Promise}
  */
+/*
 function promiseChildWindowAction(url, action, timeout) {
 
     return new Promise(async (resolve, reject) => {
         url = new URL(url);
         url.searchParams.set('helper_action', action);
-        const childWindow = window.open(url);
+        window.childWindow = window.open(url);
 
         window.actionCloseChild = (result) => {
             clearTimeout(window.actionTimeout);
             childWindow.close();
+            delete window.childWindow;
             if (result.status === 'ok') {
                 resolve(result);
             } else {
@@ -303,6 +317,7 @@ function promiseChildWindowAction(url, action, timeout) {
 
         window.actionTimeout = setTimeout(() => {
             childWindow.close();
+            delete window.childWindow;
             reject({
                 status: 'error',
                 message: 'Сброс по таймеру.',
@@ -312,4 +327,4 @@ function promiseChildWindowAction(url, action, timeout) {
         }, timeout || 10000);
 
     });
-}
+}*/
