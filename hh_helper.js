@@ -1,4 +1,4 @@
-// ==UserScript== Обновление: 12 августа 2021 - Добавлена кнопка "Скачать CSV" на страницу "Все неразобранные"
+// ==UserScript== Обновление: 20 октября 2021 - Исправлен баг в "Скачать CSV"
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -160,6 +160,17 @@ const hh_helper = function () {
     const delay = ms => {
         return new Promise(r => setTimeout(() => r(), ms))
     };
+
+
+    /**
+     * Return the first #text node content
+     * @param node
+     * @returns {*|string}
+     */
+    const getFirstTextNode = (node) => {
+        const text = [...node.childNodes].find(child => child.nodeType === Node.TEXT_NODE);
+        return text && text.textContent.trim();
+    }
 
 
     /**
@@ -469,19 +480,22 @@ const hh_helper = function () {
         let outputAddition = item.querySelector('div.output__addition[data-qa="resume-serp__resume-additional"]');
         let dates = outputAddition.querySelectorAll('div.resume-search-item__description-title');
         let updatedDate = formatDateString(dates[0].innerText.replace('Обновлено ', ''));
-        let respondedDate = formatDateString(dates[1].childNodes[0].nodeValue.replace('Откликнулся ', ''));
+        let respondedDate = formatDateString(getFirstTextNode(dates[1].childNodes[0]).replace('Откликнулся ', ''));
 
         let d = new Date(JSON.parse(
             outputAddition.querySelector('[data-name="HH/LastActivityTime"]').dataset.params
         ).lastActivityTime);
         let lastActivityDate = formatDateString(d.getDate() + ' ' + (d.getMonth() + 1) + ' ' + d.getFullYear() + ', ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2));
 
+        const compensationEl = item.querySelector('.resume-search-item__compensation')
+            || item.querySelector('.resume-search-item__header > .bloko-text');
+
         return {
             'vacancy_name': item.querySelector('.resume-search-item__name').textContent,
             'vacancy_link': item.querySelector('.resume-search-item__name').href,
             'fullname': fullname,
             'age': age,
-            'compensation': item.querySelector('.resume-search-item__compensation').textContent,
+            'compensation': compensationEl.textContent,
             'last_position': lastPosition,
             'last_company': lastCompany,
             'period': period,
