@@ -209,6 +209,9 @@
                 // добавление ссылки для whatsapp api
                 $('#app').append('<a href="" id="openChatAPI"></a>');
 
+                // Стили для родительского контейнера для кнопок
+                $('#app #side header div:nth-child(2)').css('display', 'contents');
+
                 // добавление кнопок в левый сайдбар
                 addOpenChatByPhoneButton();
                 addMassMessagingButton();
@@ -429,6 +432,14 @@
                 try {
                     // Открытие окна чата
                     let messageBox = await openChatByPhone(phoneNumber, messageText);
+                    /* Эмуляция наличия изображений для тестов
+                    var imgs = [
+                        'https://image.freepik.com/free-vector/the-scheme-of-data-transmission-isometric-secure-connection-cloud-computing-server-room-datacent_39422-875.jpg',
+                        'https://image.freepik.com/free-photo/product-presentation-podium-minimal-design-with-a-light-pink-color-background-3d-rendering_41470-4006.jpg'
+                    ];
+                    if('79259336744' === key){
+                        data.msg[key].img = imgs;
+                    }*/
                     let buttonSend;
                     if (data.msg[key].hasOwnProperty('img')) {
 
