@@ -1,4 +1,4 @@
-// ==UserScript== Обновление: 20 октября 2021 - Исправлен баг в "Скачать CSV"
+// ==UserScript== Обновление: 28 января 2022 - Изменена верстка => правки в "Скачать CSV"
 
 /*
 * ОПИСАНИЕ ФУНКЦИОНАЛА
@@ -9,7 +9,8 @@
 *     - Пригласить по теме Оценка
 */
 
-const hh_helper = function () {
+const hh_helper = function ()
+{
 
     const resumeEachItemProcessTimeout = 2000;
     const skipApplicationActionTimeout = 10000;
@@ -18,7 +19,8 @@ const hh_helper = function () {
 
     if ([ // Список масок location.href дополнительных окон веб страницы, на которых не нужно отрабатывать скрипт
         /(^[^:\/#\?]*:\/\/([^#\?\/]*\.)?websocket\.hh\.ru(:[0-9]{1,5})?\/.*$)/,
-    ].some(regExp => regExp.test(window.location.href))) {
+    ].some(regExp => regExp.test(window.location.href)))
+    {
         return;
     }
 
@@ -33,7 +35,8 @@ const hh_helper = function () {
      * @param centerX
      * @param centerY
      */
-    function eventFire(elem, type, centerX, centerY) {
+    function eventFire(elem, type, centerX, centerY)
+    {
         var evt = document.createEvent('MouseEvents');
         evt.initMouseEvent(
             type,
@@ -63,17 +66,24 @@ const hh_helper = function () {
      * @param callback Функция обратного вызова
      * @param disposable Отключение слежки после первого изменения
      */
-    function watchDomMutation(selector, target, callback, disposable = false) {
-        const observer = new MutationObserver((mutationsList) => {
-            for (let mutation of mutationsList) {
-                if (mutation.type !== 'childList' || !mutation.addedNodes.length) {
+    function watchDomMutation(selector, target, callback, disposable = false)
+    {
+        const observer = new MutationObserver((mutationsList) =>
+        {
+            for (let mutation of mutationsList)
+            {
+                if (mutation.type !== 'childList' || !mutation.addedNodes.length)
+                {
                     continue;
                 }
-                Array.from(mutation.addedNodes).forEach(function (node) {
-                    if (!(node instanceof Element)) {
+                Array.from(mutation.addedNodes).forEach(function (node)
+                {
+                    if (!(node instanceof Element))
+                    {
                         return;
                     }
-                    if (node.matches(selector)) {
+                    if (node.matches(selector))
+                    {
                         callback(node);
                         disposable && observer.disconnect();
                         return observer;
@@ -94,31 +104,47 @@ const hh_helper = function () {
      * @param target Родительский элемент
      * @param type Тип мутации
      */
-    function waitDomMutation(selector, target, type = null) {
-        return new Promise(function (resolve) {
-            const observer = new MutationObserver((mutationsList) => {
-                for (let mutation of mutationsList) {
-                    if (type && mutation.type !== type) {
+    function waitDomMutation(selector, target, type = null)
+    {
+        return new Promise(function (resolve)
+        {
+            const observer = new MutationObserver((mutationsList) =>
+            {
+                for (let mutation of mutationsList)
+                {
+                    if (type && mutation.type !== type)
+                    {
                         continue;
                     }
-                    if (mutation.type === 'childList') {
-                        if (mutation.type !== 'childList' || !mutation.addedNodes.length) {
+                    if (mutation.type === 'childList')
+                    {
+                        if (mutation.type !== 'childList' || !mutation.addedNodes.length)
+                        {
                             continue;
                         }
-                        Array.from(mutation.addedNodes).forEach(function (node) {
-                            if (!(node instanceof Element)) {
+                        Array.from(mutation.addedNodes).forEach(function (node)
+                        {
+                            if (!(node instanceof Element))
+                            {
                                 return;
                             }
-                            if (node.matches(selector)) {
+                            if (node.matches(selector))
+                            {
                                 observer.disconnect();
                                 resolve(node);
                             }
                         });
-                    } else if (mutation.type === 'attributes') {
+                    }
+                    else if (mutation.type === 'attributes')
+                    {
                         resolve(mutation);
-                    } else if (mutation.type === 'characterData') {
+                    }
+                    else if (mutation.type === 'characterData')
+                    {
                         console.log('The ' + mutation.characterData + ' characterData was modified.');
-                    } else {
+                    }
+                    else
+                    {
                         console.log('The mutation type is ' + mutation.type);
                     }
                 }
@@ -139,11 +165,15 @@ const hh_helper = function () {
      * @param parent Родительский элемент
      * @returns {Promise<Element>}
      */
-    function waitForElement(selector, parent = document) {
-        return new Promise(function (resolve) {
-            let interval = setInterval(function () {
+    function waitForElement(selector, parent = document)
+    {
+        return new Promise(function (resolve)
+        {
+            let interval = setInterval(function ()
+            {
                 const element = parent.querySelector(selector);
-                if (element) {
+                if (element)
+                {
                     clearInterval(interval);
                     resolve(element);
                 }
@@ -157,7 +187,8 @@ const hh_helper = function () {
      * @param ms
      * @returns {Promise<null>}
      */
-    const delay = ms => {
+    const delay = ms =>
+    {
         return new Promise(r => setTimeout(() => r(), ms))
     };
 
@@ -167,7 +198,8 @@ const hh_helper = function () {
      * @param node
      * @returns {*|string}
      */
-    const getFirstTextNode = (node) => {
+    const getFirstTextNode = (node) =>
+    {
         const text = [...node.childNodes].find(child => child.nodeType === Node.TEXT_NODE);
         return text && text.textContent.trim();
     }
@@ -180,7 +212,8 @@ const hh_helper = function () {
      * @param start Начало выборки сегментов
      * @returns {string}
      */
-    function getUrlPathSegments(url = '', limit = 0, start = 0) {
+    function getUrlPathSegments(url = '', limit = 0, start = 0)
+    {
 
         let pathname = url
             ? new URL(url).pathname
@@ -189,9 +222,16 @@ const hh_helper = function () {
         const sectionsArray = pathname.replace(/^\/|\/$/g, '').split('/');
 
         let sectionsResult = [];
-        for (let i = 0, count = 0; sectionsArray.length > i; i++, count++) {
-            if (start > i) continue;
-            if (limit && count === limit) break;
+        for (let i = 0, count = 0; sectionsArray.length > i; i++, count++)
+        {
+            if (start > i)
+            {
+                continue;
+            }
+            if (limit && count === limit)
+            {
+                break;
+            }
             sectionsResult.push(sectionsArray[i]);
         }
 
@@ -204,7 +244,8 @@ const hh_helper = function () {
      * @param parameterName Имя параметра
      * @returns {string}
      */
-    function getUrlParameterValue(parameterName) {
+    function getUrlParameterValue(parameterName)
+    {
         return (new URL(window.location.href)).searchParams.get(parameterName);
     }
 
@@ -214,11 +255,14 @@ const hh_helper = function () {
      * @param str
      * @returns {string}
      */
-    function formatDateString(str) {
+    function formatDateString(str)
+    {
         let months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
         str = str.replace(/\u00a0/g, ' ');
-        for (let i = 0; i < months.length; i++) {
-            if (str.includes(months[i])) {
+        for (let i = 0; i < months.length; i++)
+        {
+            if (str.includes(months[i]))
+            {
                 str = str.replace(months[i], (i + 1).toString());
                 break;
             }
@@ -239,7 +283,8 @@ const hh_helper = function () {
      * @param str Строка для поиска номеров
      * @returns {*} Возвращает массив с номерами телефонов
      */
-    function getPhoneNumbersFromString(str) {
+    function getPhoneNumbersFromString(str)
+    {
         return str.match(/(\+)?(\(\d{2,3}\) ?\d|\d)(([ \-]?\d)|( ?\(\d{2,3}\) ?)){5,12}\d/g);
     }
 
@@ -249,7 +294,8 @@ const hh_helper = function () {
      * @param phoneNumber Строка с номер телефона
      * @returns {*}
      */
-    function clearPhoneNumber(phoneNumber) {
+    function clearPhoneNumber(phoneNumber)
+    {
         return phoneNumber.replace(/[^+\d]+/g, "");
     }
 
@@ -260,7 +306,8 @@ const hh_helper = function () {
      * @param parent
      * @param index
      */
-    function insertElement(element, parent, index) {
+    function insertElement(element, parent, index)
+    {
         let children = parent.childNodes;
         index = typeof index === 'undefined' || !children[index] ? children.length : index;
         parent.insertBefore(element, children[index]);
@@ -273,7 +320,8 @@ const hh_helper = function () {
      * @param index Порядковый номер кнопки перед которой будет вставлена новая
      * @returns Element Возвращает добавленную кнопку
      */
-    function addCollectionFilterButton(html, index) {
+    function addCollectionFilterButton(html, index)
+    {
         const wrapper = document.createElement('span');
         wrapper.setAttribute('class', 'candidates-button');
         wrapper.innerHTML = html;
@@ -289,7 +337,8 @@ const hh_helper = function () {
      * @param index Порядковый номер кнопки перед которой будет вставлена новая
      * @returns Element Возвращает добавленную кнопку
      */
-    function addResumeFilterButton(html, index) {
+    function addResumeFilterButton(html, index)
+    {
         const wrapper = document.createElement('div');
         wrapper.setAttribute('class', 'candidates-reject-controls');
         wrapper.innerHTML = html;
@@ -330,24 +379,28 @@ const hh_helper = function () {
         'offer',
         'hired',
         'discard_by_employer'
-    ].includes(getUrlParameterValue('collection'))) {
+    ].includes(getUrlParameterValue('collection')))
+    {
 
         /* Добавление кнопок "Выбрать все" и "Скачать CSV" */
         waitForElement('[data-qa="lux-container lux-container-rendered"] > div',
-            document.querySelector('div.vacancy-responses-filters')).then(container => {
+            document.querySelector('form.vacancy-responses-filters')).then(container =>
+            {
 
-                collectionFiltersContainer = container;
+                collectionFiltersContainer = container.querySelector('.vacancy-responses-controls');
 
                 // Добавление кнопки "Скачать CSV"
-                addCollectionFilterButton('<button class="bloko-button">Скачать CSV</button>', 2)
-                    .addEventListener('click', function (e) {
+                addCollectionFilterButton('<button class="bloko-button">Скачать CSV</button>', 0)
+                    .addEventListener('click', function (e)
+                    {
                         e.preventDefault();
                         actionGrabVacancies();
                     });
 
                 // Добавление кнопки "Выбрать все"
-                addCollectionFilterButton('<input type="checkbox" title="Выбрать все" style="margin-right:5px">', 0)
-                    .addEventListener('click', function (e) {
+                addCollectionFilterButton('<input type="checkbox" title="Выбрать все" style="margin:13px 5px 0 0">', 0)
+                    .addEventListener('click', function (e)
+                    {
                         actionSelectAllVacancies(e.target);
                     });
 
@@ -358,17 +411,21 @@ const hh_helper = function () {
 
     /* Открыта страница "Все неразобранные" отклики */
     if (getUrlPathSegments() === 'employer/vacancyresponses'
-        && 'response' === getUrlParameterValue('collection')) {
+        && 'response' === getUrlParameterValue('collection'))
+    {
 
-        collectionFiltersContainer = document.querySelector('div.vacancy-responses-controls.HH-Employer-VacancyResponse-Controls');
+        collectionFiltersContainer = document.querySelector('div.vacancy-responses-controls');
 
-        // Добавление кнопки "Скачать CSV"
-        addCollectionFilterButton('<button class="bloko-button">Скачать CSV</button>', 2)
-            .addEventListener('click', function (e) {
-                e.preventDefault();
-                actionGrabVacancies();
-            });
-
+        setTimeout(function ()
+        {
+            // Добавление кнопки "Скачать CSV"
+            addCollectionFilterButton('<button class="bloko-button">Скачать CSV</button>', 1)
+                .addEventListener('click', function (e)
+                {
+                    e.preventDefault();
+                    actionGrabVacancies();
+                });
+        }, 200)
     }
 
 
@@ -378,12 +435,14 @@ const hh_helper = function () {
      * --------------------------------------------------------------------------------------------------------------
      */
 
-    async function actionGrabVacancies() {
+    async function actionGrabVacancies()
+    {
         let tempArrayVacancies = [];
         let containerVacancies = await waitForElement(selectorContainerVacancies);
         // Если не первая страница
         let buttonFirstPage = document.querySelector(selectorButtonFirstPage);
-        if (buttonFirstPage) {
+        if (buttonFirstPage)
+        {
             eventFire(buttonFirstPage, 'click');
             await waitForElement(selectorContainerVacancies + ' div[data-qa="pager-block"]');
         }
@@ -393,7 +452,8 @@ const hh_helper = function () {
 
         // Если есть следующая страница
         let buttonNext = document.querySelector(selectorButtonNextPage);
-        while (buttonNext) {
+        while (buttonNext)
+        {
             eventFire(buttonNext, 'click');
             // Парсинг текущей страницы
             await waitForElement(selectorContainerVacancies + ' div[data-qa="pager-block"]');
@@ -407,17 +467,21 @@ const hh_helper = function () {
         // До конца функции - генерация CSV
         let csv = '';
         let delimiter = ';';
-        for (let row = 0; row < tempArrayVacancies.length; row++) {
+        for (let row = 0; row < tempArrayVacancies.length; row++)
+        {
             let keysAmount = Object.keys(tempArrayVacancies[row]).length
             let keysCounter = 0
-            if (row === 0) {
-                for (let key in tempArrayVacancies[row]) {
+            if (row === 0)
+            {
+                for (let key in tempArrayVacancies[row])
+                {
                     csv += '"' + key + (keysCounter + 1 < keysAmount ? ('"' + delimiter) : '"\r\n')
                     keysCounter++
                 }
             }
             keysCounter = 0
-            for (let key in tempArrayVacancies[row]) {
+            for (let key in tempArrayVacancies[row])
+            {
                 csv += '"' + tempArrayVacancies[row][key].replace(/["«»]/g, '').replace(delimiter, '') + (keysCounter + 1 < keysAmount ? ('"' + delimiter) : '"\r\n')
                 keysCounter++
             }
@@ -439,71 +503,109 @@ const hh_helper = function () {
         document.querySelector('#download-csv').click();
     }
 
-    function grubVacanciesPage(wrapper) {
+    function grubVacanciesPage(wrapper)
+    {
 
-        return new Promise(async resolve => {
+        return new Promise(async resolve =>
+        {
             let items = wrapper.querySelectorAll(selectorVacancyItem);
             let result = [];
-            for (var item of items) {
+            for (var item of items)
+            {
                 result.push(await grabVacancyItem(item));
             }
             resolve(result);
         });
     }
 
-    async function grabVacancyItem(item) {
-        let age = item.querySelector('span[data-qa="resume-serp__resume-age"]').textContent;
-        let fullname = item.querySelector('.resume-search-item__fullname').textContent.split(',')[0].replace(age, '');
-        let lastPosition = '';
-        let lastCompany = '';
-        let period = '';
-        let lastPositionElement = item.querySelector('.resume-search-item__description-content[data-qa="resume-serp_resume-item-content"] div[data-hh-last-experience-id]');
-        if (lastPositionElement) {
-            lastPosition = lastPositionElement.querySelector('.bloko-link-switch').textContent;
-            let parentContainer = lastPositionElement.closest('.resume-search-item__description-content');
-            lastCompany = (parentContainer.querySelector('.bloko-text-emphasis') || parentContainer.querySelector('span.resume-hidden-field_search')).textContent;
-            period = parentContainer.lastElementChild.textContent;
-        }
-        let phones = item.querySelectorAll('div[data-qa="resume-contacts-phone"]');
-        let phonesStr = '';
-        if (phones.length) {
-            phones.forEach((phone) => {
-                let showPhoneNumberButton = phone.querySelector('button[data-qa="response-resume_show-phone-number"]')
-                if (showPhoneNumberButton) {
-                    eventFire(showPhoneNumberButton, 'click');
-                }
-                phonesStr += getPhoneNumbersFromString(phone.textContent).join(', ') + ', ';
+    async function grabVacancyItem(item)
+    {
+        return new Promise(async resolve =>
+        {
+
+            let age = item.querySelector('span[data-qa="resume-serp__resume-age"]').textContent;
+            let fullname = item.querySelector('.resume-search-item__fullname').textContent.split(',')[0].replace(age, '');
+            let lastPosition = '';
+            let lastCompany = '';
+            let period = '';
+            let lastPositionElement = item.querySelector('.resume-search-item__description-content[data-qa="resume-serp_resume-item-content"] div[data-hh-last-experience-id]');
+            if (lastPositionElement)
+            {
+                lastPosition = lastPositionElement.querySelector('.bloko-link-switch').textContent;
+                let parentContainer = lastPositionElement.closest('.resume-search-item__description-content');
+                lastCompany = (parentContainer.querySelector('.bloko-text-emphasis') || parentContainer.querySelector('span.resume-hidden-field_search')).textContent;
+                period = parentContainer.lastElementChild.textContent;
+            }
+            let phonesContainer = item.querySelectorAll('div[data-qa="resume-contacts-phone"]');
+            let phones = phonesContainer.length ? await getItemPhoneNumbers(phonesContainer) : '';
+            let outputAddition = item.querySelector('div.output__addition[data-qa="resume-serp__resume-additional"]');
+            let dates = outputAddition.querySelectorAll('div.resume-search-item__description-title');
+            let updatedDate = formatDateString(dates[0].innerText.replace('Обновлено ', ''));
+            let respondedDate = formatDateString(getFirstTextNode(dates[1].childNodes[0]).replace('Откликнулся ', ''));
+
+            let d = new Date(JSON.parse(
+                outputAddition.querySelector('[data-name="HH/LastActivityTime"]').dataset.params
+            ).lastActivityTime);
+            let lastActivityDate = formatDateString(d.getDate() + ' ' + (d.getMonth() + 1) + ' ' + d.getFullYear() + ', ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2));
+
+            const compensationEl = item.querySelector('.resume-search-item__compensation')
+                || item.querySelector('.resume-search-item__header > .bloko-text');
+
+            resolve({
+                'vacancy_name': item.querySelector('.resume-search-item__name').textContent,
+                'vacancy_link': item.querySelector('.resume-search-item__name').href,
+                'fullname': fullname,
+                'age': age,
+                'compensation': compensationEl.textContent,
+                'last_position': lastPosition,
+                'last_company': lastCompany,
+                'period': period,
+                'phone': phones,
+                'updated_date': updatedDate,
+                'responded_date': respondedDate,
+                'last_activity': lastActivityDate,
             });
-            phonesStr = phonesStr.slice(0, -2);
-        }
+        });
+    }
 
-        let outputAddition = item.querySelector('div.output__addition[data-qa="resume-serp__resume-additional"]');
-        let dates = outputAddition.querySelectorAll('div.resume-search-item__description-title');
-        let updatedDate = formatDateString(dates[0].innerText.replace('Обновлено ', ''));
-        let respondedDate = formatDateString(getFirstTextNode(dates[1].childNodes[0]).replace('Откликнулся ', ''));
+    async function getItemPhoneNumbers(phonesContainer)
+    {
+        return new Promise(async resolve =>
+        {
+            let phonesStr = '';
+            for (let phone of phonesContainer)
+            {
+                let phoneStr = '';
+                let hiddenPhoneContainer = phone.querySelector('.resume__contacts-phone-hidden');
+                if (hiddenPhoneContainer)
+                {
+                    let phoneTextContainer = hiddenPhoneContainer.querySelector('.HH-Resume-Contacts-PhoneNumber');
+                    if (phoneTextContainer.dataset.phone)
+                    {
+                        phoneStr = phoneTextContainer.dataset.phone;
+                    }
+                    else
+                    {
+                        let showPhoneNumberButton = hiddenPhoneContainer.querySelector('button[data-qa="response-resume_show-phone-number"]');
+                        if (showPhoneNumberButton)
+                        {
+                            setTimeout(function ()
+                            {
+                                eventFire(showPhoneNumberButton, 'click');
+                            }, 200);
+                        }
+                        phoneStr = phoneTextContainer.textContent;
+                    }
+                }
+                else
+                {
+                    phoneStr = phone.textContent;
+                }
+                phonesStr += getPhoneNumbersFromString(phoneStr).join(', ') + ', ';
+            }
 
-        let d = new Date(JSON.parse(
-            outputAddition.querySelector('[data-name="HH/LastActivityTime"]').dataset.params
-        ).lastActivityTime);
-        let lastActivityDate = formatDateString(d.getDate() + ' ' + (d.getMonth() + 1) + ' ' + d.getFullYear() + ', ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2));
-
-        const compensationEl = item.querySelector('.resume-search-item__compensation')
-            || item.querySelector('.resume-search-item__header > .bloko-text');
-
-        return {
-            'vacancy_name': item.querySelector('.resume-search-item__name').textContent,
-            'vacancy_link': item.querySelector('.resume-search-item__name').href,
-            'fullname': fullname,
-            'age': age,
-            'compensation': compensationEl.textContent,
-            'last_position': lastPosition,
-            'last_company': lastCompany,
-            'period': period,
-            'phone': phonesStr,
-            'updated_date': updatedDate,
-            'responded_date': respondedDate,
-            'last_activity': lastActivityDate,
-        };
+            resolve(phonesStr.slice(0, -2));
+        });
     }
 
 
@@ -513,10 +615,13 @@ const hh_helper = function () {
      * --------------------------------------------------------------------------------------------------------------
      */
 
-    function actionSelectAllVacancies(checkbox) {
+    function actionSelectAllVacancies(checkbox)
+    {
         let items = document.querySelectorAll(selectorContainerVacancies + ' ' + selectorVacancyItem);
-        for (var item of items) {
-            if (checkbox.checked && !item.classList.contains('resume-search-item_checked') || !checkbox.checked && item.classList.contains('resume-search-item_checked')) {
+        for (var item of items)
+        {
+            if (checkbox.checked && !item.classList.contains('resume-search-item_checked') || !checkbox.checked && item.classList.contains('resume-search-item_checked'))
+            {
                 eventFire(item.querySelector('.bloko-checkbox'), 'click');
             }
         }
@@ -530,35 +635,45 @@ const hh_helper = function () {
      */
 
     /* Открыта страница поиска подходящих резюме */
-    if (getUrlPathSegments() === 'search/resume') {
+    if (getUrlPathSegments() === 'search/resume')
+    {
 
-        if (getUrlParameterValue('helper_action') === 'download') {
+        if (getUrlParameterValue('helper_action') === 'download')
+        {
             // Если идет процесс скачки файлов
 
             applicationsPageWalker();
-        } else if (getUrlParameterValue('helper_action') === 'invite') {
+        }
+        else if (getUrlParameterValue('helper_action') === 'invite')
+        {
             // Если идет процесс рассылки приглашений
 
             applicationsPageWalker();
-        } else {
+        }
+        else
+        {
             // Если страница открыта обычным способом
 
             /* Добавление кнопок "Скачать резюме" и "Пригласить" */
             waitDomMutation('div', document.querySelector('#HH-React-Root .bloko-form-item', 'attributes'))
-                .then(() => {
+                .then(() =>
+                {
                     applicationsFiltersContainer = document.querySelector('#HH-React-Root .resume-serp-filters');
 
                     addResumeFilterButton('<button class="bloko-button">Скачать резюме</button>', 4)
-                        .addEventListener('click', function (e) {
+                        .addEventListener('click', function (e)
+                        {
 
-                            if (GM.getValue || confirm("Внимание! Локальное хранилище не включено. Продолжить работу?")) {
+                            if (GM.getValue || confirm("Внимание! Локальное хранилище не включено. Продолжить работу?"))
+                            {
                                 // Если включено локальное хранилище или проигнорировано пользователем
                                 applicationsPageWalker('download');
                             }
                         });
 
                     addResumeFilterButton('<button class="bloko-button">Пригласить</button>', 5)
-                        .addEventListener('click', function (e) {
+                        .addEventListener('click', function (e)
+                        {
                             applicationsPageWalker('invite');
                         });
                 });
@@ -570,18 +685,23 @@ const hh_helper = function () {
          * @param action Текущее действие на странице
          * @returns {Promise<void>}
          */
-        async function applicationsPageWalker(action = '') {
+        async function applicationsPageWalker(action = '')
+        {
             const currentPage = parseInt(getUrlParameterValue('page')) || 0;
 
-            if (action || getUrlParameterValue('helper_action')) {
+            if (action || getUrlParameterValue('helper_action'))
+            {
 
-                if (action && currentPage !== 0) {
+                if (action && currentPage !== 0)
+                {
                     // Если не первая страница и процесс парсинга еще не начат - перехожу к первой странице
 
                     const buttonFirstPage = document.querySelector(selectorApplicationsNavButtonFirstPage) || document.querySelector(selectorApplicationsNavButtonPageOne);
                     location.href = buttonFirstPage.href + '&helper_action=' + action;
 
-                } else {
+                }
+                else
+                {
                     // Начинаю или родолжаю парсить
 
                     await delay(1000);
@@ -593,20 +713,27 @@ const hh_helper = function () {
                     await processApplications(applications, action, resumeEachItemProcessTimeout);
 
                     const buttonNextPage = document.querySelector(selectorApplicationsNavButtonNextPage);
-                    if (buttonNextPage) {
+                    if (buttonNextPage)
+                    {
                         // Если есть следующая страница - перехожу на нее
 
-                        if (!getUrlParameterValue('helper_action')) {
+                        if (!getUrlParameterValue('helper_action'))
+                        {
                             location.href = buttonNextPage.href + '&helper_action=' + action;
-                        } else {
+                        }
+                        else
+                        {
                             eventFire(buttonNextPage, 'click');
                         }
 
-                    } else {
+                    }
+                    else
+                    {
                         // Завершаю работу
 
                         history.pushState({}, null, location.href.replace('&helper_action=' + action, ''));
-                        document.querySelectorAll(selectorApplicationsNavButtons).forEach(function (button) {
+                        document.querySelectorAll(selectorApplicationsNavButtons).forEach(function (button)
+                        {
                             button.href = button.href.replace('&helper_action=' + action, '')
                         });
                         console.warn('ГОТОВО. Обработано: ' + (currentPage + 1) + ' страниц');
@@ -625,22 +752,29 @@ const hh_helper = function () {
          * @param timeout Пауза после обработкт каждого резюме
          * @returns {Promise<void>}
          */
-        async function processApplications(applications, action, timeout) {
-            for (const item of applications) {
+        async function processApplications(applications, action, timeout)
+        {
+            for (const item of applications)
+            {
 
                 const application_url = item.querySelector('[data-qa="resume-serp__resume-title"]').href;
                 const application_hash = getUrlPathSegments(application_url, 0, 1);
 
-                try {
+                try
+                {
                     let result;
-                    switch (action) {
+                    switch (action)
+                    {
 
                         case "download":
 
-                            if (GM.getValue && await GM.getValue(application_hash)) {
+                            if (GM.getValue && await GM.getValue(application_hash))
+                            {
                                 // Если ID резюме сохранен в хранилищи - значит был скачан прежде
                                 continue;
-                            } else if (!GM.getValue) {
+                            }
+                            else if (!GM.getValue)
+                            {
 
                             }
 
@@ -650,7 +784,8 @@ const hh_helper = function () {
                             break;
 
                         case "invite":
-                            if (item.querySelector('[data-qa="topic-state"]')) {
+                            if (item.querySelector('[data-qa="topic-state"]'))
+                            {
                                 // Приглашение уже отправлнео
                                 continue;
                             }
@@ -660,10 +795,13 @@ const hh_helper = function () {
                             break;
 
                     }
-                    if (result) {
+                    if (result)
+                    {
                         console.log('Успешнно: "' + result.message + '". ID резюме: ' + application_hash);
                     }
-                } catch (result) {
+                }
+                catch (result)
+                {
                     console.error('Неудача: "' + result.message + '". ID резюме: ' + application_hash)
                 }
 
@@ -678,26 +816,33 @@ const hh_helper = function () {
          * @param url Адрес страницы
          * @returns {Promise}
          */
-        function processChildWindowAction(action, url) {
+        function processChildWindowAction(action, url)
+        {
 
-            return new Promise(async (resolve, reject) => {
+            return new Promise(async (resolve, reject) =>
+            {
 
                 const childWindow = window.open(url + '&helper_action=' + action);
 
-                unsafeWindow.actionCloseChild = (result) => {
+                unsafeWindow.actionCloseChild = (result) =>
+                {
 
                     clearTimeout(window.actionTimeout);
                     childWindow.close();
 
-                    if (result.status === 'ok') {
+                    if (result.status === 'ok')
+                    {
                         resolve(result);
-                    } else {
+                    }
+                    else
+                    {
                         reject(result);
                     }
 
                 }
 
-                window.actionTimeout = setTimeout(() => {
+                window.actionTimeout = setTimeout(() =>
+                {
 
                     childWindow.close();
                     reject({
@@ -719,20 +864,25 @@ const hh_helper = function () {
 
     /* Открыта страница резюме */
 
-    if (getUrlPathSegments(null, 1) === 'resume') {
+    if (getUrlPathSegments(null, 1) === 'resume')
+    {
 
         const action = getUrlParameterValue('helper_action');
 
-        if (action === 'download') {
+        if (action === 'download')
+        {
 
-            downloadResume().then(function (result) {
+            downloadResume().then(function (result)
+            {
                 // Если успешно
 
                 // Запрос к родительскому окну на закрытие окна резюме через 1 секунду
-                setTimeout(function () {
+                setTimeout(function ()
+                {
                     window.opener.actionCloseChild(result);
                 }, 1000);
-            }).catch(function (result) {
+            }).catch(function (result)
+            {
                 // Если неудача
 
                 // Запрос к родительскому окну на закрытие окна резюме
@@ -741,15 +891,18 @@ const hh_helper = function () {
 
         }
 
-        async function downloadResume() {
-            return new Promise(async (resolve, reject) => {
+        async function downloadResume()
+        {
+            return new Promise(async (resolve, reject) =>
+            {
 
                 // Получение ID резюме
                 const resume_hash = getUrlPathSegments(null, 0, 1);
 
                 // Получение имени
                 const personalNameElement = await waitForElement('[data-qa="resume-personal-name"]');
-                if (!personalNameElement) {
+                if (!personalNameElement)
+                {
                     reject({
                         status: 'error',
                         message: 'Имя соискателя не найдено или скрыто.',
@@ -764,7 +917,8 @@ const hh_helper = function () {
                 let phoneNumber = await getResumePhoneNumber(contactsBlock);
 
                 // Если номер телефона скрыт
-                if (!phoneNumber) {
+                if (!phoneNumber)
+                {
                     reject({
                         status: 'error',
                         message: 'Номер телефона не найден или скрыт.',
@@ -794,12 +948,15 @@ const hh_helper = function () {
             });
         }
 
-        async function getResumePhoneNumber(source) {
+        async function getResumePhoneNumber(source)
+        {
 
             let showPhoneNumberButton = source.querySelector('[data-qa="response-resume_show-phone-number"]');
 
-            if (showPhoneNumberButton) { // Номер телефона скрыт
-                setTimeout(() => {
+            if (showPhoneNumberButton)
+            { // Номер телефона скрыт
+                setTimeout(() =>
+                {
                     eventFire(showPhoneNumberButton, 'click');
                 }, 500);
                 source = await waitDomMutation('[data-qa="resume-serp_resume-item-content"]', source);
@@ -823,18 +980,22 @@ const hh_helper = function () {
 
     /* Открыта страница приглашения */
 
-    if (getUrlPathSegments() === 'employer/negotiations/change_topic') {
+    if (getUrlPathSegments() === 'employer/negotiations/change_topic')
+    {
 
         const action = getUrlParameterValue('helper_action');
 
-        if (action === 'invite') {
+        if (action === 'invite')
+        {
 
-            inviteOnAssessment().then(function (result) {
+            inviteOnAssessment().then(function (result)
+            {
                 // Если успешно
 
                 // Запрос к родительскому окну на закрытие окна
                 window.opener.actionCloseChild(result);
-            }).catch(function (result) {
+            }).catch(function (result)
+            {
                 // Если неудача
 
                 // Запрос к родительскому окну на закрытие окна резюме
@@ -842,8 +1003,10 @@ const hh_helper = function () {
             });
         }
 
-        async function inviteOnAssessment() {
-            return new Promise(async (resolve, reject) => {
+        async function inviteOnAssessment()
+        {
+            return new Promise(async (resolve, reject) =>
+            {
                 const inviteStatesSelect = document.querySelector('[data-qa="negotiations-change-topic__states"]');
                 const inviteSubmitButton = document.querySelector('[data-qa="negotiations-change-topic__submit"]');
 
@@ -852,11 +1015,13 @@ const hh_helper = function () {
                 inviteStatesSelect.value = 'assessment';
                 eventFire(inviteStatesSelect, 'change');
 
-                setTimeout(() => {
+                setTimeout(() =>
+                {
                     eventFire(inviteSubmitButton, 'click');
                 }, 500);
 
-                window.addEventListener("unload", function () {
+                window.addEventListener("unload", function ()
+                {
                     resolve(
                         {
                             status: 'ok',
