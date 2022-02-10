@@ -133,6 +133,17 @@ const bitrix_helper = function ()
         });
     }
 
+    /**
+     * Синхронная функция задержки(паузы)
+     * @param {int} ms
+     * @returns Promise<null>
+     */
+    function delay(ms)
+    {
+        return new Promise(r => setTimeout(() => r(), ms))
+    }
+
+
     function getPhoneNumber()
     {
         // Setup phone code priorities
@@ -928,38 +939,35 @@ const bitrix_helper = function ()
     /*
     * ----------------------------- Обзвон галерея
     */
-    if (['deal-list','deal-category'].includes(docType))
+    if (['deal-list', 'deal-category'].includes(docType))
     {
 
         appendStyle('https://raw.githubusercontent.com/OwlCarousel2/OwlCarousel2/develop/dist/assets/owl.carousel.min.css', true);
         appendStyle('https://raw.githubusercontent.com/dimsemenov/Magnific-Popup/master/dist/magnific-popup.css', true);
-        appendStyle('.im-phone-call-list-container .owl-carousel .slide{cursor:pointer;height:120px;}' +
+        appendStyle('.im-phone-call-list-container .owl-carousel .slide{cursor:pointer;/*height:120px;*/}' +
             '.carousel_outer_container{margin-top:30px;margin-left:20px;background:#fff}' +
-            '.carousel_outer_container > div{display:none}' +
-            '.carousel_outer_container > div.active{display:block}' +
-            '.carousel_outer_container nav > button{background-color:grey;color:white;font-weight:bold;border:none;padding:5px 10px;border-radius:10px;cursor: pointer;margin-right:3px;}' +
-            '.carousel_outer_container nav > button.active{background-color:#ff4040;}' +
             '.owl-carousel .owl-nav button{position:absolute;top:18%;font-size:60px !important;}' +
             '.owl-carousel .owl-nav button.owl-next{right:0}' +
-            '.mfp-bg,.mfp-wrap{z-index:1000000 !important}');
+            '.mfp-bg,.mfp-wrap{z-index:1000000 !important}' +
+            '.owl-carousel .owl-stage {display:flex;align-items:center;}');
         //set OwlCarousel2 https://github.com/OwlCarousel2/OwlCarousel2
         let owl_carousel_options = {
             'items': 6,
             'nav': true,
             'slideBy': 6,
-            'dots': false,
+            'dots': true,
             'margin': 8,
-            'autoWidth': true,
         }
 
         watchDomMutation('#im-phone-call-view', document, im_phone_call_view =>
         {
-            let carousel_outer_container;
+            var carousel_outer_container;
             DEBUG_MODE && console.log('Ожидание мутации в #crm-card-detail-container ...');
             watchDomMutation('#crm-card-detail-container', im_phone_call_view, async crm_card_detail_container =>
             {
                 DEBUG_MODE && console.log('Мутация в #crm-card-detail-container');
-                if(carousel_outer_container){
+                if (carousel_outer_container)
+                {
                     carousel_outer_container.innerHTML = '';
                 }
                 let deal_nodes = crm_card_detail_container.querySelectorAll('.crm-card-show-detail-info-wrap:first-child .crm-card-show-detail-info-main-inner a');
@@ -973,80 +981,65 @@ const bitrix_helper = function ()
                     return;
                 }
                 DEBUG_MODE && console.log('Ожидание .im-phone-call-list-container ...');
-                waitForElement('.im-phone-call-list-container', im_phone_call_view).then(im_phone_call_list_container =>
+                waitForElement('.im-phone-call-list-container', im_phone_call_view).then(async im_phone_call_list_container =>
                 {
                     DEBUG_MODE && console.log('Найден .im-phone-call-list-container');
-                    if(!carousel_outer_container){
+                    if (!carousel_outer_container)
+                    {
                         carousel_outer_container = document.createElement('div');
                         carousel_outer_container.className = 'carousel_outer_container';
                         im_phone_call_list_container.appendChild(carousel_outer_container);
                     }
-                    let nav = document.createElement('nav');
-                    carousel_outer_container.appendChild(nav);
-                    for (let [adv_id, adv_body] of Object.entries(json.results.advImage.result))
+                    let adv_body = Object.values(json.results.advImage.result)[0];
+                    console.log('adv_body = ', adv_body)
+                    let carousel_container = document.createElement('div');
+                    carousel_container.innerHTML = `<h2 class="slide__title"><a href="${adv_body.info.advUrl}" target="_blank">${adv_body.info.advName}</a></h2>`;
+                    let slider = document.createElement('div');
+                    slider.className = 'owl-carousel owl-theme';
+                    adv_body.image.forEach(image_url =>
                     {
-                        let carousel_container = document.createElement('div');
-                        carousel_container.id = 'carousel_container_' + adv_id;
-                        carousel_container.innerHTML = `<h2 class="slide__title"><a href="${adv_body.info.advUrl}" target="_blank">${adv_body.info.advName}</a></h2>`;
-                        let slider = document.createElement('div');
-                        slider.className = 'owl-carousel owl-theme';
-                        slider.id = 'slider_' + adv_id;
-                        adv_body.image.forEach(image_url =>
-                        {
-                            let slide = document.createElement('img');
-                            slide.className = 'slide';
-                            slide.src = image_url;
-                            slider.appendChild(slide);
-                            let moved = false;
-                            $(slide)
-                                /* Конфликт событий клик и драг https://stackoverflow.com/questions/6042202/how-to-distinguish-mouse-click-and-drag */
-                                .mousedown(function ()
+                        let slide = document.createElement('img');
+                        slide.className = 'slide';
+                        slide.src = image_url;
+                        slider.appendChild(slide);
+                        let moved = false;
+                        $(slide)
+                            /* Конфликт событий клик и драг https://stackoverflow.com/questions/6042202/how-to-distinguish-mouse-click-and-drag */
+                            .mousedown(function ()
+                            {
+                                moved = false;
+                            })
+                            .mousemove(function ()
+                            {
+                                moved = true;
+                            })
+                            .mouseup(function (event)
+                            {
+                                if (!moved) // clicked without moving mouse
                                 {
-                                    moved = false;
-                                })
-                                .mousemove(function ()
-                                {
-                                    moved = true;
-                                })
-                                .mouseup(function (event)
-                                {
-                                    if (!moved) // clicked without moving mouse
-                                    {
-                                        //set Magnific-Popup https://github.com/dimsemenov/Magnific-Popup/
-                                        $.magnificPopup.open({
-                                            items: {
-                                                src: image_url
-                                            },
-                                            type: 'image',
-                                            zoom: {
-                                                enabled: true,
-                                                duration: 300,
-                                                easing: 'ease-out',
-                                                opener: function ()
-                                                {
-                                                    return $(slide);
-                                                }
+                                    //set Magnific-Popup https://github.com/dimsemenov/Magnific-Popup/
+                                    $.magnificPopup.open({
+                                        items: {
+                                            src: image_url
+                                        },
+                                        type: 'image',
+                                        zoom: {
+                                            enabled: true,
+                                            duration: 300,
+                                            easing: 'ease-out',
+                                            opener: function ()
+                                            {
+                                                return $(slide);
                                             }
-                                        }, 0);
-                                    }
-                                });
-                        });
-                        let button = document.createElement('button');
-                        button.innerText = adv_id;
-                        button.addEventListener('click', event =>
-                        {
-                            $('.carousel_outer_container nav > button').removeClass('active');
-                            event.target.classList.add('active');
-                            $('.carousel_outer_container > div').removeClass('active');
-                            carousel_container.classList.add('active');
-                        });
-                        nav.appendChild(button);
-                        carousel_container.appendChild(slider);
-                        carousel_outer_container.appendChild(carousel_container);
-                        $(slider).owlCarousel(owl_carousel_options);
-                    }
-                    // todo: wait all images loaded
-                    nav.firstChild.click();
+                                        }
+                                    }, 0);
+                                }
+                            });
+                    });
+                    carousel_container.appendChild(slider);
+                    carousel_outer_container.appendChild(carousel_container);
+                    await delay(100);
+                    $(slider).owlCarousel(owl_carousel_options);
                 });
             });
         });
