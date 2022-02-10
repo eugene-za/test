@@ -1,12 +1,12 @@
-// ==UserScript== Обновлено 29 апреля 2021 - Popup, Timetable
+// ==UserScript== Обновлено 10 февраля 2022 - Обзвон галерея
 
 /* global $ */
 const version = '3';
 const CORE_DEBUG_MODE = false;
-const API_URL = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?version=' + version + '&userID=' + userID + '&ah=' + userToken;
 
 const bitrix_helper = function ()
 {
+    const API_URL = 'https://a.unirenter.ru/b24/api/notifyBitrix.php?version=' + version + '&userID=' + userID + '&ah=' + userToken;
 
     /*
     * --------------------------- Functions
