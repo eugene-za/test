@@ -956,10 +956,11 @@ const bitrix_helper = function ()
                 let ids = [...deal_nodes].map(link => link.href.match(/details\/(\d+)/)[1]);
                 const response = await fetch(API_URL + '&do=advImage&dealID=' + ids.join(','));
                 const json = await response.json();
-                if (!json)
+                if (!json || json.length === 0)
                 {
                     return;
                 }
+                console.log(json);
                 waitForElement('.im-phone-call-list-container', im_phone_call_view).then(im_phone_call_list_container =>
                 {
                     let carousel_outer_container = document.createElement('div');
