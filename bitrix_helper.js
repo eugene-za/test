@@ -189,6 +189,10 @@ const bitrix_helper = function ()
     {
         docType = 'deal-list';
     }
+    else if (location.href.includes('deal/category'))
+    {
+        docType = 'deal-category';
+    }
     else if (location.href.includes('contact/details'))
     {
         docType = 'contact';
@@ -924,7 +928,7 @@ const bitrix_helper = function ()
     /*
     * ----------------------------- Обзвон галерея
     */
-    if (['deal-list'].includes(docType))
+    if (['deal-list','deal-category'].includes(docType))
     {
 
         appendStyle('https://raw.githubusercontent.com/OwlCarousel2/OwlCarousel2/develop/dist/assets/owl.carousel.min.css', true);
@@ -950,19 +954,24 @@ const bitrix_helper = function ()
 
         watchDomMutation('#im-phone-call-view', document, im_phone_call_view =>
         {
+            DEBUG_MODE && console.log('Ожидание #crm-card-detail-container ...');
             waitForElement('#crm-card-detail-container', im_phone_call_view).then(async crm_card_detail_container =>
             {
+                DEBUG_MODE && console.log('Найден #crm-card-detail-container');
                 let deal_nodes = crm_card_detail_container.querySelectorAll('.crm-card-show-detail-info-wrap:first-child .crm-card-show-detail-info-main-inner a');
                 let ids = [...deal_nodes].map(link => link.href.match(/details\/(\d+)/)[1]);
+                DEBUG_MODE && console.log('АПИ запрос на ' + API_URL + '&do=advImage&dealID=' + ids.join(','));
                 const response = await fetch(API_URL + '&do=advImage&dealID=' + ids.join(','));
                 const json = await response.json();
+                DEBUG_MODE && console.log('АПИ ответ json: ' + json);
                 if (!json || json.length === 0)
                 {
                     return;
                 }
-                console.log(json);
+                DEBUG_MODE && console.log('Ожидание .im-phone-call-list-container ...');
                 waitForElement('.im-phone-call-list-container', im_phone_call_view).then(im_phone_call_list_container =>
                 {
+                    DEBUG_MODE && console.log('Найден .im-phone-call-list-container');
                     let carousel_outer_container = document.createElement('div');
                     carousel_outer_container.id = 'carousel_outer_container';
                     im_phone_call_list_container.appendChild(carousel_outer_container);
@@ -1017,7 +1026,6 @@ const bitrix_helper = function ()
                                 });
                         });
                         let button = document.createElement('button');
-                        button.className = 'menu-item-index';
                         button.innerText = adv_id;
                         button.addEventListener('click', event =>
                         {
