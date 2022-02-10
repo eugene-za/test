@@ -934,12 +934,12 @@ const bitrix_helper = function ()
         appendStyle('https://raw.githubusercontent.com/OwlCarousel2/OwlCarousel2/develop/dist/assets/owl.carousel.min.css', true);
         appendStyle('https://raw.githubusercontent.com/dimsemenov/Magnific-Popup/master/dist/magnific-popup.css', true);
         appendStyle('.im-phone-call-list-container .owl-carousel .slide{cursor:pointer;height:120px;}' +
-            '#carousel_outer_container{margin-top:30px;margin-left:20px;background:#fff}' +
-            '#carousel_outer_container > div{display:none}' +
-            '#carousel_outer_container > div.active{display:block}' +
-            '#carousel_outer_container nav > button{background-color:grey;color:white;font-weight:bold;border-radius:3px;margin-right:3px;}' +
-            '#carousel_outer_container nav > button.active{background-color:red}' +
-            '.owl-carousel .owl-nav button{position:absolute;top:18%;font-size:60px !important;mix-blend-mode:screen;color:#007eff !important;}' +
+            '.carousel_outer_container{margin-top:30px;margin-left:20px;background:#fff}' +
+            '.carousel_outer_container > div{display:none}' +
+            '.carousel_outer_container > div.active{display:block}' +
+            '.carousel_outer_container nav > button{background-color:grey;color:white;font-weight:bold;border:none;padding:5px 10px;border-radius:10px;cursor: pointer;margin-right:3px;}' +
+            '.carousel_outer_container nav > button.active{background-color:#ff4040;}' +
+            '.owl-carousel .owl-nav button{position:absolute;top:18%;font-size:60px !important;}' +
             '.owl-carousel .owl-nav button.owl-next{right:0}' +
             '.mfp-bg,.mfp-wrap{z-index:1000000 !important}');
         //set OwlCarousel2 https://github.com/OwlCarousel2/OwlCarousel2
@@ -954,10 +954,14 @@ const bitrix_helper = function ()
 
         watchDomMutation('#im-phone-call-view', document, im_phone_call_view =>
         {
-            DEBUG_MODE && console.log('Ожидание #crm-card-detail-container ...');
-            waitForElement('#crm-card-detail-container', im_phone_call_view).then(async crm_card_detail_container =>
+            let carousel_outer_container;
+            DEBUG_MODE && console.log('Ожидание мутации в #crm-card-detail-container ...');
+            watchDomMutation('#crm-card-detail-container', im_phone_call_view, async crm_card_detail_container =>
             {
-                DEBUG_MODE && console.log('Найден #crm-card-detail-container');
+                DEBUG_MODE && console.log('Мутация в #crm-card-detail-container');
+                if(carousel_outer_container){
+                    carousel_outer_container.innerHTML = '';
+                }
                 let deal_nodes = crm_card_detail_container.querySelectorAll('.crm-card-show-detail-info-wrap:first-child .crm-card-show-detail-info-main-inner a');
                 let ids = [...deal_nodes].map(link => link.href.match(/details\/(\d+)/)[1]);
                 DEBUG_MODE && console.log('АПИ запрос на ' + API_URL + '&do=advImage&dealID=' + ids.join(','));
@@ -972,9 +976,11 @@ const bitrix_helper = function ()
                 waitForElement('.im-phone-call-list-container', im_phone_call_view).then(im_phone_call_list_container =>
                 {
                     DEBUG_MODE && console.log('Найден .im-phone-call-list-container');
-                    let carousel_outer_container = document.createElement('div');
-                    carousel_outer_container.id = 'carousel_outer_container';
-                    im_phone_call_list_container.appendChild(carousel_outer_container);
+                    if(!carousel_outer_container){
+                        carousel_outer_container = document.createElement('div');
+                        carousel_outer_container.className = 'carousel_outer_container';
+                        im_phone_call_list_container.appendChild(carousel_outer_container);
+                    }
                     let nav = document.createElement('nav');
                     carousel_outer_container.appendChild(nav);
                     for (let [adv_id, adv_body] of Object.entries(json.results.advImage.result))
@@ -1029,9 +1035,9 @@ const bitrix_helper = function ()
                         button.innerText = adv_id;
                         button.addEventListener('click', event =>
                         {
-                            $('#carousel_outer_container nav > button').removeClass('active');
+                            $('.carousel_outer_container nav > button').removeClass('active');
                             event.target.classList.add('active');
-                            $('#carousel_outer_container > div').removeClass('active');
+                            $('.carousel_outer_container > div').removeClass('active');
                             carousel_container.classList.add('active');
                         });
                         nav.appendChild(button);
@@ -1044,7 +1050,6 @@ const bitrix_helper = function ()
                 });
             });
         });
-
     }
 };
 
