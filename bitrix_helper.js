@@ -60,12 +60,14 @@ const bitrix_helper = function ()
 
     function waitForElement(selector, target)
     {
+        DEBUG_MODE && console.log('Ожидание элемента' + selector + ' ...');
         return new Promise(function (resolve)
         {
             var element = (target || document).querySelector(selector);
 
             if (element)
             {
+                DEBUG_MODE && console.log('Найден ' + selector, element);
                 resolve(element);
                 return;
             }
@@ -103,6 +105,7 @@ const bitrix_helper = function ()
      */
     function watchDomMutation(selector, target, callback, disposable = false)
     {
+        DEBUG_MODE && console.log('Ожидание мутации в ' + selector + ' ...');
         const observer = new MutationObserver((mutationsList) =>
         {
             for (let mutation of mutationsList)
@@ -120,6 +123,7 @@ const bitrix_helper = function ()
                     CORE_DEBUG_MODE && console.log('CORE_DEBUG_MODE', 'Mutation of', node, 'in', target);
                     if (node.matches(selector))
                     {
+                        DEBUG_MODE && console.log('Мутация в ' + selector);
                         callback(node);
                         disposable && observer.disconnect();
                         return observer;
@@ -143,6 +147,25 @@ const bitrix_helper = function ()
         return new Promise(r => setTimeout(() => r(), ms))
     }
 
+    async function getApiData(params)
+    {
+        const params_str = Object.keys(params).map(key => '&' + key + '=' + params[key]).join('');
+        DEBUG_MODE && console.log('АПИ запрос на ' + API_URL + params_str);
+        try
+        {
+            const response = await fetch(API_URL + params_str);
+            DEBUG_MODE && console.log('API response:', response);
+            const contentType = response.headers.get("content-type");
+            return (contentType && contentType.indexOf("application/json") !== -1)
+                ? await response.json()
+                : response.text();
+        }
+        catch (e)
+        {
+            DEBUG_MODE && console.error('API error:', e);
+            return null;
+        }
+    }
 
     function getPhoneNumber()
     {
@@ -179,6 +202,79 @@ const bitrix_helper = function ()
             return null;
         }
     }
+
+    /**
+     * OwlCarousel2 https://github.com/OwlCarousel2/OwlCarousel2
+     * Magnific-Popup https://github.com/dimsemenov/Magnific-Popup/
+     */
+    function useGalleryCarousel()
+    {
+        appendStyle('https://raw.githubusercontent.com/OwlCarousel2/OwlCarousel2/develop/dist/assets/owl.carousel.min.css', true);
+        appendStyle('https://raw.githubusercontent.com/dimsemenov/Magnific-Popup/master/dist/magnific-popup.css', true);
+    }
+
+    /**
+     * OwlCarousel2 https://github.com/OwlCarousel2/OwlCarousel2
+     * Magnific-Popup https://github.com/dimsemenov/Magnific-Popup/
+     * @param data Object
+     * @param options Object OwlCarousel options
+     * @returns {Promise<Node>}
+     */
+    function makeGalleryCarousel(data, options, container)
+    {
+        return new Promise(resolve =>
+        {
+            const carousel_container = document.createElement('div');
+            carousel_container.innerHTML = `<h2 class="slide__title"><a href="${data.info.advUrl}" target="_blank">${data.info.advName}</a></h2>`;
+            const slider = document.createElement('div');
+            slider.className = 'owl-carousel owl-theme';
+            data.image.forEach(image_url =>
+            {
+                let slide = document.createElement('img');
+                slide.className = 'slide';
+                slide.src = image_url;
+                slider.appendChild(slide);
+                let moved = false;
+                $(slide)
+                    /* Конфликт событий клик и драг https://stackoverflow.com/questions/6042202/how-to-distinguish-mouse-click-and-drag */
+                    .mousedown(function ()
+                    {
+                        moved = false;
+                    })
+                    .mousemove(function ()
+                    {
+                        moved = true;
+                    })
+                    .mouseup(function (event)
+                    {
+                        if (!moved) // clicked without moving mouse
+                        {
+                            $.magnificPopup.open({
+                                items: {
+                                    src: image_url
+                                },
+                                type: 'image',
+                                zoom: {
+                                    enabled: true,
+                                    duration: 300,
+                                    easing: 'ease-out',
+                                    opener: function ()
+                                    {
+                                        return $(slide);
+                                    }
+                                }
+                            }, 0);
+                        }
+                    });
+            });
+            carousel_container.appendChild(slider);
+            container.appendChild(carousel_container);
+            $(slider).owlCarousel(options);
+
+            resolve(carousel_container);
+        });
+    }
+
 
     /*
     * ----------------------------- Setup document type, ID.
@@ -801,7 +897,7 @@ const bitrix_helper = function ()
             '#popup_window header span#btn1221 {padding:5px 10px;float:right;border-radius:4px;background-color:#882c2c;font-size:15px;margin:-1px 5px 0;cursor:pointer;color:#fff}');
 
         window.popupIsLoading = false;
-        window.showPopup = async (url) =>
+        window.showPopup = async function (url)
         {
             url += '&version=' + version + '&userID=' + userID + '&ah=' + userToken + '&doc=' + docType
                 + '&id=' + docId + (docType === 'lead' ? '&phone=' + getPhoneNumber() : '');
@@ -836,9 +932,51 @@ const bitrix_helper = function ()
             }
         }
 
-        window.closePopup = (element) =>
+        window.closePopup = function (element)
         {
             (element.id === 'popup_window' ? element : element.closest('div#popup_window')).remove();
+        }
+
+        useGalleryCarousel();
+        appendStyle('.im-phone-call-list-container .owl-carousel .slide{cursor:pointer;}' +
+            '.carousel_outer_container{position:fixed;bottom:10px;z-index:20000;width:50%;left:10%;background:#fff;padding:0 10px;border-radius:5px;box-shadow:0px 0px 10px rgb(184 184 255);}' +
+            '.owl-carousel .owl-nav button{position:absolute;top:18%;font-size:60px !important;}' +
+            '.owl-carousel .owl-nav button.owl-next{right:0}' +
+            '.mfp-bg,.mfp-wrap{z-index:1000000 !important}' +
+            '.owl-carousel .owl-stage {display:flex;align-items:center;}' +
+            '.carousel_outer_container h2.slide__title{text-decoration:underline}' +
+            '.carousel_outer_container > button{position:absolute;right:10px;top:10px;z-index:10}');
+        window.showImage = async function (deal_id/*'84572'*/, event_target)
+        {
+            DEBUG_MODE && console.log('showImage:', deal_id, event_target);
+
+            if (typeof showImage.carousel_outer_container == 'undefined')
+            {
+                window.showImage.carousel_outer_container = document.createElement('div');
+                window.showImage.carousel_outer_container.className = 'carousel_outer_container';
+                const close_button = document.createElement('button');
+                close_button.innerHTML = 'X';
+                close_button.addEventListener('click', function (event)
+                {
+                    window.showImage.carousel_outer_container.remove();
+                    window.showImage.carousel_outer_container = undefined;
+                })
+                window.showImage.carousel_outer_container.appendChild(close_button);
+                document.body.appendChild(window.showImage.carousel_outer_container);
+            } else {
+                window.showImage.carousel_outer_container.children[1].remove();
+            }
+            const api_data = await getApiData({'do': 'advImage', 'dealID': deal_id});
+            DEBUG_MODE && console.log('api_data:', api_data);
+            let adv_body = Object.values(api_data.results.advImage.result)[0];
+            await makeGalleryCarousel(adv_body, {
+                    'items': 6,
+                    'nav': true,
+                    'slideBy': 6,
+                    'dots': true,
+                    'margin': 8,
+                },
+                window.showImage.carousel_outer_container);
         }
 
         /*
@@ -936,113 +1074,61 @@ const bitrix_helper = function ()
         }, 500);
     }
 
+
     /*
     * ----------------------------- Обзвон галерея
     */
     if (['deal-list', 'deal-category'].includes(docType))
     {
-
-        appendStyle('https://raw.githubusercontent.com/OwlCarousel2/OwlCarousel2/develop/dist/assets/owl.carousel.min.css', true);
-        appendStyle('https://raw.githubusercontent.com/dimsemenov/Magnific-Popup/master/dist/magnific-popup.css', true);
+        useGalleryCarousel();
         appendStyle('.im-phone-call-list-container .owl-carousel .slide{cursor:pointer;/*height:120px;*/}' +
-            '.carousel_outer_container{margin-top:30px;margin-left:20px;background:#fff}' +
+            '.carousel_outer_container{margin-top:10px;padding-bottom:15px;background:#fff;border-bottom:1px solid #edeeef;}' +
             '.owl-carousel .owl-nav button{position:absolute;top:18%;font-size:60px !important;}' +
             '.owl-carousel .owl-nav button.owl-next{right:0}' +
             '.mfp-bg,.mfp-wrap{z-index:1000000 !important}' +
-            '.owl-carousel .owl-stage {display:flex;align-items:center;}');
-        //set OwlCarousel2 https://github.com/OwlCarousel2/OwlCarousel2
-        let owl_carousel_options = {
-            'items': 6,
-            'nav': true,
-            'slideBy': 6,
-            'dots': true,
-            'margin': 8,
-        }
+            '.owl-carousel .owl-stage {display:flex;align-items:center;}' +
+            '.carousel_outer_container h2.slide__title{text-align:center;text-decoration:underline}');
 
         watchDomMutation('#im-phone-call-view', document, im_phone_call_view =>
         {
             var carousel_outer_container;
-            DEBUG_MODE && console.log('Ожидание мутации в #crm-card-detail-container ...');
             watchDomMutation('#crm-card-detail-container', im_phone_call_view, async crm_card_detail_container =>
             {
-                DEBUG_MODE && console.log('Мутация в #crm-card-detail-container');
                 if (carousel_outer_container)
                 {
-                    carousel_outer_container.innerHTML = '';
+                    carousel_outer_container.remove();
+                    carousel_outer_container = undefined;
                 }
                 let deal_nodes = crm_card_detail_container.querySelectorAll('.crm-card-show-detail-info-wrap:first-child .crm-card-show-detail-info-main-inner a');
                 let ids = [...deal_nodes].map(link => link.href.match(/details\/(\d+)/)[1]);
-                DEBUG_MODE && console.log('АПИ запрос на ' + API_URL + '&do=advImage&dealID=' + ids.join(','));
-                const response = await fetch(API_URL + '&do=advImage&dealID=' + ids.join(','));
-                const json = await response.json();
-                DEBUG_MODE && console.log('АПИ ответ json: ' + json);
-                if (!json || json.length === 0)
+                const api_data = await getApiData({'do': 'advImage', 'dealID': ids.join(',')});
+                if (!api_data || api_data.length === 0)
                 {
                     return;
                 }
-                DEBUG_MODE && console.log('Ожидание .im-phone-call-list-container ...');
                 waitForElement('.im-phone-call-list-container', im_phone_call_view).then(async im_phone_call_list_container =>
                 {
-                    DEBUG_MODE && console.log('Найден .im-phone-call-list-container');
                     if (!carousel_outer_container)
                     {
                         carousel_outer_container = document.createElement('div');
                         carousel_outer_container.className = 'carousel_outer_container';
-                        im_phone_call_list_container.appendChild(carousel_outer_container);
+                        const items = im_phone_call_list_container.querySelector('.im-phone-call-list-items-measuring');
+                        items.querySelector('.im-phone-call-list-customer-block-active').after(carousel_outer_container);
                     }
-                    let adv_body = Object.values(json.results.advImage.result)[0];
-                    console.log('adv_body = ', adv_body)
-                    let carousel_container = document.createElement('div');
-                    carousel_container.innerHTML = `<h2 class="slide__title"><a href="${adv_body.info.advUrl}" target="_blank">${adv_body.info.advName}</a></h2>`;
-                    let slider = document.createElement('div');
-                    slider.className = 'owl-carousel owl-theme';
-                    adv_body.image.forEach(image_url =>
-                    {
-                        let slide = document.createElement('img');
-                        slide.className = 'slide';
-                        slide.src = image_url;
-                        slider.appendChild(slide);
-                        let moved = false;
-                        $(slide)
-                            /* Конфликт событий клик и драг https://stackoverflow.com/questions/6042202/how-to-distinguish-mouse-click-and-drag */
-                            .mousedown(function ()
-                            {
-                                moved = false;
-                            })
-                            .mousemove(function ()
-                            {
-                                moved = true;
-                            })
-                            .mouseup(function (event)
-                            {
-                                if (!moved) // clicked without moving mouse
-                                {
-                                    //set Magnific-Popup https://github.com/dimsemenov/Magnific-Popup/
-                                    $.magnificPopup.open({
-                                        items: {
-                                            src: image_url
-                                        },
-                                        type: 'image',
-                                        zoom: {
-                                            enabled: true,
-                                            duration: 300,
-                                            easing: 'ease-out',
-                                            opener: function ()
-                                            {
-                                                return $(slide);
-                                            }
-                                        }
-                                    }, 0);
-                                }
-                            });
-                    });
-                    carousel_container.appendChild(slider);
-                    carousel_outer_container.appendChild(carousel_container);
-                    await delay(100);
-                    $(slider).owlCarousel(owl_carousel_options);
+                    let adv_body = Object.values(api_data.results.advImage.result)[0];
+                    await makeGalleryCarousel(adv_body, {
+                            'items': 6,
+                            'nav': true,
+                            'slideBy': 6,
+                            'dots': true,
+                            'margin': 8,
+                        },
+                        carousel_outer_container);
                 });
             });
         });
     }
+
+
 };
 
