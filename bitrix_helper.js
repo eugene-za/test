@@ -1,4 +1,4 @@
-// ==UserScript== Обновлено 10 февраля 2022 - Обзвон галерея
+// ==UserScript== Обновлено 14 февраля 2022 - Обзвон галерея(Добавлена функция showImage)
 
 /* global $ */
 const version = '3';
@@ -43,18 +43,7 @@ const bitrix_helper = function ()
     async function appendStyle(cssRules, link = false)
     {
         var style_element = document.createElement('style');
-        //style_element.type = 'text/css';
-        /*if(link){
-            fetch(myRequest).then(response =>
-                response.text()/!*.then(function(text) {
-                    myArticle.innerHTML = text;
-                })*!/
-            );
-        }*/
-
-
         style_element.appendChild(document.createTextNode(link ? await fetch(cssRules).then(response => response.text()) : cssRules));
-
         document.head.appendChild(style_element);
     }
 
